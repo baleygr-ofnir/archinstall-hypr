@@ -182,7 +182,9 @@ get_timezone() {
   )
 
   if command -v gum &> /dev/null; then
-    TIMEZONE=$(printf '%s\n' "${timezones[@]}" | gum choose --no-limit --header "Select timezone: ")
+    TIMEZONE=$(printf '%s\n' "${timezones[@]}" | gum choose --header "Select timezone: ")
+    # Remove any trailing whitespace
+    TIMEZONE=$(echo "$TIMEZONE" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
     if [[ "$TIMEZONE" == "Custom" ]]; then
       TIMEZONE=$(gum input --placeholder "(e.g. Europe/Stockholm, America/Los_Angeles, etc.)" --prompt "Enter timezone: ")
     fi
@@ -205,7 +207,7 @@ get_timezone() {
           TIMEZONE=$(dialog --title "Custom Timezone" --inputbox "Enter timezone:" 8 40 3>&1 1>&2 2>&3)
       fi
     else
-      TIMEZONE="Europe/London"
+      TIMEZONE="Europe/Stockholm"
     fi
   else
     echo "Available timezones:"
@@ -230,7 +232,7 @@ get_timezone() {
   fi
 
   # Validate timezone exists
-  if [[ ! -f "/usr/share/zoneinfo/$TIMEZONE" ]]; then
+  if [[ ! -f "/usr/share/zoneinfo/${TIMEZONE}" ]]; then
     echo "Timezone $TIMEZONE not found, defaulting to Europe/Stockholm"
     TIMEZONE="Europe/Stockholm"
   fi

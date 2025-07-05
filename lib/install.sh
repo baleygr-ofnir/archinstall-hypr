@@ -16,12 +16,12 @@ install_base_system() {
   # Mkinitcpio configuration
   echo "Configuring mkinitcpio..."
   sed -i \
-    -e 's/^HOOKS=.*microcode.*kms.*consolefont.*/#&/' \
-    -e '/^#\?HOOKS=.*microcode.*kms.*consolefont.*/a \\n\# CUSTOM SYSTEMD HOOK\nHOOKS=(base systemd autodetect microcode plymouth modconf kms keyboard keymap sd-vconsole sd-encrypt block filesystems fsck)/' \
-    -e '/^#\?COMPRESSION="zstd"/s/^#//' \
-    -e '/^#\?COMPRESSION_OPTIONS=.*/s/^#//' \
-    -e '/^COMPRESSION_OPTIONS=/s/()/(-15)/' \
-    /mnt/etc/mkinitcpio.conf
+      -e 's/^HOOKS=.*microcode.*kms.*consolefont.*/#&/' \
+      -e '/^#\?HOOKS=.*microcode.*kms.*consolefont.*/a\\n# CUSTOM SYSTEMD HOOK\nHOOKS=(base systemd autodetect microcode plymouth modconf kms keyboard keymap sd-vconsole sd-encrypt block filesystems fsck)' \
+      -e '/^#\?COMPRESSION="zstd"/s/^#//' \
+      -e '/^#\?COMPRESSION_OPTIONS=.*/s/^#//' \
+      -e '/^COMPRESSION_OPTIONS=/s/()/(-15)/' \
+      /mnt/etc/mkinitcpio.conf
   # Prereqs for arch-chroot env
   echo "Enabling extra and multilib repositories"
   sed -i \
@@ -30,7 +30,7 @@ install_base_system() {
     -e '/^#\?\[multilib\]/s/^#//' \
     -e '/^\[multilib\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
     /mnt/etc/pacman.conf
-  arch-chroot /mnt pacman -Syu --noconfirm \
+  arch-chroot /mnt pacman -Syu --noconfirm --needed \
     efibootmgr \
     firewalld \
     networkmanager \
@@ -442,12 +442,13 @@ create_chroot_script() {
     echo "  - Install desktop environment"
 CHROOT_EOF
   # Replace placeholders
-  sed -i "s/HOSTNAME_PLACEHOLDER/${HOSTNAME}/g" /mnt/configure_system.sh
-  sed -i "s/USERNAME_PLACEHOLDER/${USERNAME}/g" /mnt/configure_system.sh
-  sed -i "s/USER_PASSWORD_PLACEHOLDER/${USER_PASSWORD}/g" /mnt/configure_system.sh
-  sed -i "s/ROOT_PASSWORD_PLACEHOLDER/${ROOT_PASSWORD}/g" /mnt/configure_system.sh
-  sed -i "s/TIMEZONE_PLACEHOLDER/${TIMEZONE}/g" /mnt/configure_system.sh
-  sed -i "s/SYSVOL_PART_PLACEHOLDER/${SYSVOL_PART}/g" /mnt/configure_system.sh
-  sed -i "s/USRVOL_PART_PLACEHOLDER/${USRVOL_PART}/g" /mnt/configure_system.sh
+  sed -i \
+    -e "s/^HOSTNAME_PLACEHOLDER$/${HOSTNAME}/g" /mnt/configure_system.sh \
+    -e "s/USERNAME_PLACEHOLDER/${USERNAME}/g" /mnt/configure_system.sh \
+    -e "s/USER_PASSWORD_PLACEHOLDER/${USER_PASSWORD}/g" /mnt/configure_system.sh \
+    -e "s/ROOT_PASSWORD_PLACEHOLDER/${ROOT_PASSWORD}/g" /mnt/configure_system.sh \
+    -e "s/TIMEZONE_PLACEHOLDER/${TIMEZONE}/g" /mnt/configure_system.sh \
+    -e "s/SYSVOL_PART_PLACEHOLDER/${SYSVOL_PART}/g" /mnt/configure_system.sh \
+    -e "s/USRVOL_PART_PLACEHOLDER/${USRVOL_PART}/g" /mnt/configure_system.sh
   chmod +x /mnt/configure_system.sh
 }
