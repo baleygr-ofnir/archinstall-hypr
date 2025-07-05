@@ -120,6 +120,17 @@ create_chroot_script() {
     ::1         localhost
     127.0.1.1   HOSTNAME_PLACEHOLDER.mimirsbrunnr.lan HOSTNAME_PLACEHOLDER
     EOF
+    # Mkinitcpio configuration
+    sed -i -f - /etc/mkinitcpio.conf << 'HOOKS_EOF'
+    s/^HOOKS=.*microcode.*kms.*consolefont.*/#&/
+    /^#\?HOOKS=.*microcode.*kms.*consolefont.*/a\
+    \
+    # CUSTOM SYSTEMD HOOK
+    HOOKS=(base systemd autodetect microcode plymouth modconf kms keyboard keymap sd-vconsole sd-encrypt block filesystems fsck)
+    /^#\?COMPRESSION="zstd"/s/^#//
+    /^#\?COMPRESSION_OPTIONS=.*/s/^#//
+    /^COMPRESSION_OPTIONS=/s/()/(-15)/
+    HOOKS_EOF
     # Install essential gaming prereq packages
     echo "Installing essential packages..."
     pacman -Syu --needed --noconfirm
@@ -437,12 +448,12 @@ create_chroot_script() {
 CHROOT_EOF
   # Replace placeholders
   sed -i \
-    -e "s|^HOSTNAME_PLACEHOLDER$|${HOSTNAME}|g" \
-    -e "s|USERNAME_PLACEHOLDER|${USERNAME}|g"  \
-    -e "s|USER_PASSWORD_PLACEHOLDER|${USER_PASSWORD}|g"  \
-    -e "s|ROOT_PASSWORD_PLACEHOLDER|${ROOT_PASSWORD}|g"  \
-    -e "s|TIMEZONE_PLACEHOLDER|${TIMEZONE}|g"  \
-    -e "s|SYSVOL_PART_PLACEHOLDER|${SYSVOL_PART}|g"  \
+    -e "s/HOSTNAME_PLACEHOLDER/${HOSTNAME}/g" \
+    -e "s/USERNAME_PLACEHOLDER/${USERNAME}/g" \
+    -e "s/USER_PASSWORD_PLACEHOLDER/${USER_PASSWORD}/g" \
+    -e "s/ROOT_PASSWORD_PLACEHOLDER/${ROOT_PASSWORD}/g" \
+    -e "s|TIMEZONE_PLACEHOLDER|${TIMEZONE}|g" \
+    -e "s|SYSVOL_PART_PLACEHOLDER|${SYSVOL_PART}|g" \
     -e "s|USRVOL_PART_PLACEHOLDER|${USRVOL_PART}|g" \
     /mnt/configure_system.sh
   chmod +x /mnt/configure_system.sh
