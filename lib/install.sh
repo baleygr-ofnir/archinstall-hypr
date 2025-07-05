@@ -25,7 +25,7 @@ configure_system() {
 
 # Create configuration script for chroot environment
 create_chroot_script() {
-  cat > /mnt/configure_system.sh << 'CHROOT_EOF'
+  cat > /mnt/configure_system.sh << EOF
   #!/bin/bash
   # Configuration script for chroot environment
   set -e
@@ -94,18 +94,18 @@ create_chroot_script() {
     echo "en_GB.UTF-8 UTF-8" >> /etc/locale.gen
     echo "sv_SE.UTF-8 UTF-8" >> /etc/locale.gen
     locale-gen
-    cat > /etc/locale.conf << EOF
+    cat > /etc/locale.conf << 'LOCALE_EOF'
     LANG=en_GB.UTF-8
     LC_NUMERIC=sv_SE.UTF-8
     LC_TIME=sv_SE.UTF-8
     LC_MONETARY=sv_SE.UTF-8
     LC_PAPER=sv_SE.UTF-8
     LC_MEASUREMENT=sv_SE.UTF-8
-    EOF
+    LOCALE_EOF
   fi
-  cat << EOF > /etc/vconsole.conf
+  cat << 'VCONSOLE_EOF' > /etc/vconsole.conf
   KEYMAP=sv-latin1
-  EOF
+  VCONSOLE_EOF
   sleep 2
 
   # Mkinitcpio configuration
@@ -266,7 +266,7 @@ create_chroot_script() {
   rm -rf /tmp/yay
   # Rebuild initramfs
   mkinitcpio -P
-CHROOT_EOF
+EOF
   # Replace placeholders
   sed -i "s/HOSTNAME_PLACEHOLDER/${HOSTNAME}/g" /mnt/configure_system.sh
   sed -i "s/LANDOMAIN_PLACEHOLDER/${LANDOMAIN}/g" /mnt/configure_system.sh

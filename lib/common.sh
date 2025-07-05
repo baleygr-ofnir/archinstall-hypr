@@ -73,7 +73,7 @@ validate_hostname() {
     return 1
   fi
   printf "Hostname: '%s'\n" "$hostname"
-  printf "Landomain+suffix: '%s'\n" "$landomain$domainsuffix"
+  printf "Landomain+suffix: '%s'\n" "$landomain.$domainsuffix"
   # Check format: letters, numbers, hyphens (no leading/trailing hyphens)
   if [[ "$hostname" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$ ]] && [[ "$landomain.$domainsuffix" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.${domainsuffix}$ ]]; then
     return 0
