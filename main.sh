@@ -28,7 +28,6 @@ EFI_SIZE="1G"
 SYSVOL_SIZE="65G"
 # shellcheck disable=SC2034
 BTRFS_OPTS="defaults,noatime,compress=zstd:3,discard=async,space_cache=v2"
-MKINITCPIO_CONF="${SCRIPT_DIR}/conf/mkinitcpio.conf"
 
 # Source all modules
 source "${SCRIPT_DIR}/lib/common.sh"

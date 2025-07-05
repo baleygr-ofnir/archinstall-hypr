@@ -20,7 +20,7 @@ configure_system() {
   echo "Configuring system..."
   create_chroot_script
   mv /mnt/etc/mkinitcpio.conf /mnt/etc/mkinitcpio.conf.bak
-  cp "${MKINITCPIO_CONFSRC}" /mnt/etc/mkinitcpio.conf
+  cp "${SCRIPT_DIR}/conf/mkinitcpio.conf" /mnt/etc/mkinitcpio.conf
   arch-chroot /mnt /configure_system.sh
   rm /mnt/configure_system.sh
 }
