@@ -10,6 +10,7 @@ setup_interactive_config() {
     get_hostname
     get_username
     get_user_password
+    get_root_password
     get_luks_password
     get_timezone
     select_target_disk
@@ -79,7 +80,7 @@ get_user_password() {
             local confirm_password=$(gum input --password --prompt "Confirm user password: ")
             ROOT_PASSWORD=$(gum input --password --placeholder "(minimum 6 characters)" --prompt "Enter secure root password: ")
             # shellcheck disable=SC2155
-            local confirm_root_password=$(gum input --password --prompt "Confirm secure root password: ")
+            local confirm_password=$(gum input --password --prompt "Confirm secure root password: ")
         elif command -v dialog &> /dev/null; then
             USER_PASSWORD=$(dialog --title "User Configuration" --passwordbox "Enter user password:" 8 40 3>&1 1>&2 2>&3)
             # shellcheck disable=SC2155
@@ -101,6 +102,29 @@ get_user_password() {
             else
                 echo "Passwords don't match or too short."
             fi
+        fi
+    done
+}
+
+# Root password input with confirmation
+get_root_password() {
+
+    while true; do
+        if command -v gum &> /dev/null; then
+            ROOT_PASSWORD=$(gum input --password --placeholder "(minimum 6 characters)" --prompt "Enter secure root password: ")
+            # shellcheck disable=SC2155
+            local confirm_root_password=$(gum input --password --prompt "Confirm root password: ")
+        elif command -v dialog &> /dev/null; then
+            ROOT_PASSWORD=$(dialog --title "User Configuration" --passwordbox "Enter secure root password:" 8 40 3>&1 1>&2 2>&3)
+            # shellcheck disable=SC2155
+            local confirm_root_password=$(dialog --title "Root Configuration" --passwordbox "Confirm root password:" 8 40 3>&1 1>&2 2>&3)
+        else
+            # shellcheck disable=SC2162
+            read -s -p "Enter secure root password: " ROOT_PASSWORD
+            echo
+            # shellcheck disable=SC2162
+            read -s -p "Confirm root password: " confirm_root_password
+            echo
         fi
 
         if [[ "$ROOT_PASSWORD" == "$confirm_root_password" ]] && [[ ${#ROOT_PASSWORD} -ge 6 ]]; then
@@ -165,7 +189,7 @@ get_timezone() {
     if command -v gum &> /dev/null; then
         TIMEZONE=$(printf '%s\n' "${timezones[@]}" | gum choose --no-limit --header "Select timezone: ")
         if [[ "$TIMEZONE" == "Custom" ]]; then
-            TIMEZONE=$(gum input --placeholder "(e.g., Europe/Stockholm)" --prompt "Enter timezone: ")
+            TIMEZONE=$(gum input --placeholder "(e.g. Europe/Stockholm, America/Los_Angeles, etc.)" --prompt "Enter timezone: ")
         fi
     elif command -v dialog &> /dev/null; then
         local dialog_options=()
@@ -196,12 +220,12 @@ get_timezone() {
 
         while true; do
             # shellcheck disable=SC2162
-            read -p "Select timezone number (1-${#timezones[@]}): " selection
+            read -r -p "Select timezone number (1-${#timezones[@]}): " selection
             if [[ "$selection" =~ ^[0-9]+$ ]] && [[ $selection -ge 1 ]] && [[ $selection -le ${#timezones[@]} ]]; then
                 TIMEZONE="${timezones[$((selection-1))]}"
                 if [[ "$TIMEZONE" == "Custom" ]]; then
                     # shellcheck disable=SC2162
-                    read -p "Enter custom timezone: " TIMEZONE
+                    read -r -p "Enter custom timezone: " TIMEZONE
                 fi
                 break
             else
