@@ -62,7 +62,7 @@ create_chroot_script() {
 
   # User configuration
   echo "Creating user USERNAME_PLACEHOLDER..."
-  useradd -m -G realtime,wheel -s /bin/zsh USERNAME_PLACEHOLDER
+  useradd -m -G realtime,storage,wheel -s /bin/zsh USERNAME_PLACEHOLDER
   echo 'USERNAME_PLACEHOLDER:USER_PASSWORD_PLACEHOLDER' | chpasswd -c SHA512
 
   # Root configuration
