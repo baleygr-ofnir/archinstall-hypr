@@ -18,9 +18,6 @@ setup_interactive_config() {
   echo "Configuration complete:"
   echo "  Hostname: $HOSTNAME"
   echo "  Username: $USERNAME"
-  echo "  USER_PASSWORD: $USER_PASSWORD"
-  echo "  ROOT_PASSWORD: $ROOT_PASSWORD"
-  echo "  LUKS_PASSWORD: $LUKS_PASSWORD"
   echo " Timezone: $TIMEZONE"
   echo "  Target disk: $DISK"
   sleep 8

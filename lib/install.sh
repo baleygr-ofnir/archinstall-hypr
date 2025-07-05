@@ -44,7 +44,7 @@ sed -i \
   -e '/^\[extra\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
   -e '/^#\?\[multilib\]/s/^#//' \
   -e '/^\[multilib\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
-  /mnt/etc/pacman.conf
+  /etc/pacman.conf
 pacman -Syu --noconfirm --needed \
   efibootmgr \
   firewalld \
@@ -54,13 +54,9 @@ pacman -Syu --noconfirm --needed \
   plymouth \
   pacman-contrib \
   git \
+  go \
   realtime-privileges \
   zsh
-
-# rust install
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source ~/.cargo/env
-sleep 2
 
 # User configuration
 echo "Creating user USERNAME_PLACEHOLDER..."
@@ -77,18 +73,18 @@ echo 'USERNAME_PLACEHOLDER:USER_PASSWORD_PLACEHOLDER' | chpasswd -c SHA512
 echo 'root:ROOT_PASSWORD_PLACEHOLDER' | chpasswd -c SHA512
 sleep 2
 
-# Install paru - rust-based AUR helper
-git clone https://aur.archlinux.org/paru.git /tmp/paru
-chown -R USERNAME_PLACEHOLDER /tmp/paru
-cd /tmp/paru
+# Install yay - go-based AUR helper
+git clone https://aur.archlinux.org/yay.git /tmp/yay
+chown -R USERNAME_PLACEHOLDER /tmp/yay
+cd /tmp/yay
 sudo -u USERNAME_PLACEHOLDER makepkg -s
-pacman -U --noconfirm paru-*.pkg.tar.zst
+pacman -U --noconfirm yay-*.pkg.tar.zst
 sleep 2
-sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm oh-my-zsh-git
+sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm oh-my-zsh-git
 
 # Set locale
 echo "Setting locale..."
-if $(sudo -u "USERNAME_PLACEHOLDER" paru -S --noconfirm en_se); then
+if $(sudo -u "USERNAME_PLACEHOLDER" yay -S --noconfirm en_se); then
   echo "Installed en_SE locale from AUR"
   sleep 2
   echo "Enabling it in system"
@@ -210,7 +206,7 @@ pacman -Syu --needed --noconfirm \
   dnsmasq \
   openbsd-netcat \
   dmidecode
-sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm \
+sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm \
   jdk-temurin \
   ttf-ms-win10-auto \
   ttf-ms-win11-auto
@@ -248,7 +244,7 @@ CRYPTTAB_EOF
 
 # Configure Plymouth theme
 echo "Setting Monoarch Plymouth theme..."
-sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm plymouth-theme-monoarch
+sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm plymouth-theme-monoarch
 plymouth-set-default-theme -R monoarch
 
 # Enable NetworkManager
@@ -266,13 +262,13 @@ swapon /.swapvol/swapfile
 echo "/.swapvol/swapfile none swap defaults 0 0" >> /etc/fstab
 
 echo "Installing ML4W Hyprland..."
-sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm ml4w-hyprland
+sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm ml4w-hyprland
 sleep 2
 sudo -u USERNAME_PLACEHOLDER ml4w-hyprland-setup
 # Cleanup
 echo "Cleaning up package cache..."
-sudo -u USERNAME_PLACEHOLDER paru -Scc --noconfirm
-rm -rf /tmp/paru
+sudo -u USERNAME_PLACEHOLDER yay -Scc --noconfirm
+rm -rf /tmp/yay
 # Rebuild initramfs
 mkinitcpio -P
 
