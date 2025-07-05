@@ -61,9 +61,10 @@ cd /tmp
 git clone https://aur.archlinux.org/paru.git
 cd paru
 chown -R USERNAME_PLACEHOLDER .
-su - USERNAME_PLACEHOLDER -c "makepkg"
+sudo -u USERNAME_PLACEHOLDER makepkg
 pacman -U --noconfirm "/tmp/paru/"*.tar.xz
-if su - USERNAME_PLACEHOLDER -c "paru -S --noconfirm en_se"; then
+
+if $(sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm en_se); then
     echo "Installed en_SE locale from AUR"
     echo "en_SE.UTF-8 UTF-8" >> /etc/locale.gen
     locale-gen
@@ -82,6 +83,7 @@ LC_PAPER=sv_SE.UTF-8
 LC_MEASUREMENT=sv_SE.UTF-8
 EOF
 fi
+sleep 5
 
 # Cleanup
 rm -rf /tmp/paru
@@ -177,8 +179,7 @@ swapon /.swapvol/swapfile
 echo "/.swapvol/swapfile none swap defaults 0 0" >> /etc/fstab
 
 echo "Installing ML4W Hyprland..."
-su - USERNAME_PLACEHOLDER -c "cd /tmp; git clone https://aur.archlinux.org/ml4w-hyprland.git; cd ml4w-hyprland; makepkg"
-pacman -U --noconfirm "/tmp/ml4w-hyprland/"*.tar.xz
+sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm ml4w-hyprland
 
 setup_ml4w_post_install() {
     echo "Setting up ML4W post-installation script..."
