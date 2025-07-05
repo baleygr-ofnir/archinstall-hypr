@@ -25,7 +25,7 @@ setup_interactive_config() {
 get_hostname() {
     while true; do
         if command -v gum &> /dev/null; then
-            HOSTNAME=$(gum input --placeholder "Enter hostname (e.g., archdesktop)" --prompt "Hostname: ")
+            HOSTNAME=$(gum input --placeholder "(e.g. archdesktop)" --prompt "Enter hostname: ")
         elif command -v dialog &> /dev/null; then
             HOSTNAME=$(dialog --title "System Configuration" --inputbox "Enter hostname:" 8 40 3>&1 1>&2 2>&3)
         else
@@ -49,7 +49,7 @@ get_hostname() {
 get_username() {
     while true; do
         if command -v gum &> /dev/null; then
-            USERNAME=$(gum input --placeholder "Enter username" --prompt "Username: ")
+            USERNAME=$(gum input --placeholder "(e.g. archuser, lowercase, numbers, underscore, hyphen)" --prompt "Enter username: ")
         elif command -v dialog &> /dev/null; then
             USERNAME=$(dialog --title "User Configuration" --inputbox "Enter username:" 8 40 3>&1 1>&2 2>&3)
         else
@@ -74,9 +74,9 @@ get_user_password() {
 
     while true; do
         if command -v gum &> /dev/null; then
-            USER_PASSWORD=$(gum input --password --placeholder "Enter user password")
+            USER_PASSWORD=$(gum input --password --placeholder "(minimum 6 characters)" --prompt "Enter user password: ")
             # shellcheck disable=SC2155
-            local confirm_password=$(gum input --password --placeholder "Confirm password")
+            local confirm_password=$(gum input --password --prompt "Confirm user password: ")
         elif command -v dialog &> /dev/null; then
             USER_PASSWORD=$(dialog --title "User Configuration" --passwordbox "Enter user password:" 8 40 3>&1 1>&2 2>&3)
             # shellcheck disable=SC2155
@@ -94,9 +94,9 @@ get_user_password() {
             break
         else
             if command -v gum &> /dev/null; then
-                gum style --foreground 196 "❌ Passwords don't match or too short (min 6 chars)."
+                gum style --foreground 196 "❌ Passwords don't match or too short."
             else
-                echo "Passwords don't match or too short (minimum 6 characters)."
+                echo "Passwords don't match or too short."
             fi
         fi
     done
@@ -106,9 +106,9 @@ get_user_password() {
 get_luks_password() {
     while true; do
         if command -v gum &> /dev/null; then
-            LUKS_PASSWORD=$(gum input --password --placeholder "Enter LUKS encryption password")
+            LUKS_PASSWORD=$(gum input --password --placeholder "(minimum 8 characters)" --prompt "Enter LUKS encryption password: ")
             # shellcheck disable=SC2155
-            local confirm_password=$(gum input --password --placeholder "Confirm LUKS password")
+            local confirm_password=$(gum input --password --prompt "Confirm LUKS encryption password: ")
         elif command -v dialog &> /dev/null; then
             LUKS_PASSWORD=$(dialog --title "Disk Encryption" --passwordbox "Enter LUKS encryption password:" 8 40 3>&1 1>&2 2>&3)
             # shellcheck disable=SC2155
@@ -124,9 +124,9 @@ get_luks_password() {
             break
         else
             if command -v gum &> /dev/null; then
-                gum style --foreground 196 "❌ Passwords don't match or too short (min 8 chars)."
+                gum style --foreground 196 "❌ Passwords don't match or too short."
             else
-                echo "Passwords don't match or too short (minimum 8 characters)."
+                echo "Passwords don't match or too short."
             fi
         fi
     done
@@ -150,9 +150,9 @@ get_timezone() {
     )
 
     if command -v gum &> /dev/null; then
-        TIMEZONE=$(printf '%s\n' "${timezones[@]}" | gum choose --prompt "Select timezone: ")
+        TIMEZONE=$(printf '%s\n' "${timezones[@]}" | gum choose "Select timezone: ")
         if [[ "$TIMEZONE" == "Custom" ]]; then
-            TIMEZONE=$(gum input --placeholder "Enter timezone (e.g., Europe/Stockholm)")
+            TIMEZONE=$(gum input --placeholder "(e.g., Europe/Stockholm)" --prompt "Enter timezone: ")
         fi
     elif command -v dialog &> /dev/null; then
         local dialog_options=()
