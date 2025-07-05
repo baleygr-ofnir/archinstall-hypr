@@ -79,55 +79,43 @@ create_chroot_script() {
 
   # Set locale
   echo "Setting locale..."
-  if $(sudo -u "USERNAME_PLACEHOLDER" yay -S --noconfirm en_se); then
+  mv /etc/locale.gen /etc/locale.gen.bak
+  if sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm en_se; then
     echo "Installed en_SE locale from AUR"
     sleep 2
     echo "Enabling it in system"
-    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+    echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
     echo "en_SE.UTF-8 UTF-8" >> /etc/locale.gen
     locale-gen
     echo "Configuring as system language"
     echo "LANG=en_SE.UTF-8" > /etc/locale.conf
   else
     echo "Failed to build/install en_SE, using fallback configuration"
-    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+    echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
     echo "en_GB.UTF-8 UTF-8" >> /etc/locale.gen
     echo "sv_SE.UTF-8 UTF-8" >> /etc/locale.gen
     locale-gen
-    cat > /etc/locale.conf << 'LOCALE_EOF'
-    LANG=en_GB.UTF-8
-    LC_NUMERIC=sv_SE.UTF-8
-    LC_TIME=sv_SE.UTF-8
-    LC_MONETARY=sv_SE.UTF-8
-    LC_PAPER=sv_SE.UTF-8
-    LC_MEASUREMENT=sv_SE.UTF-8
-    LOCALE_EOF
+    echo "LANG=en_GB.UTF-8" > /etc/locale.conf
+    echo "LC_NUMERIC=sv_SE.UTF-8" >> /etc/locale.conf
+    echo "LC_TIME=sv_SE.UTF-8" >> /etc/locale.conf
+    echo "LC_MONETARY=sv_SE.UTF-8" >> /etc/locale.conf
+    echo "LC_PAPER=sv_SE.UTF-8" >> /etc/locale.conf
+    echo "LC_MEASUREMENT=sv_SE.UTF-8" >> /etc/locale.conf
   fi
-  cat << 'VCONSOLE_EOF' > /etc/vconsole.conf
-  KEYMAP=sv-latin1
-  VCONSOLE_EOF
+  echo "KEYMAP=sv-latin1" > /etc/vconsole.conf
+  echo "VCONSOLE_EOF" >> /etc/vconsole.conf
   sleep 2
 
-  # Mkinitcpio configuration
-  sed -i -f - /etc/mkinitcpio.conf << 'HOOKS_EOF'
-  s/^HOOKS=.*microcode.*kms.*consolefont.*/#&/
-  /^#\?HOOKS=.*microcode.*kms.*consolefont.*/a\
-  \
-  # CUSTOM SYSTEMD HOOK
-  HOOKS=(base systemd autodetect microcode plymouth modconf kms keyboard keymap sd-vconsole sd-encrypt block filesystems fsck)
-  /^#\?COMPRESSION="zstd"/s/^#//
-  /^#\?COMPRESSION_OPTIONS=.*/s/^#//
-  /^COMPRESSION_OPTIONS=/s/()/(-15)/
-  HOOKS_EOF
+  mv /etc/mkinitcpio.conf /etc/mkinitcpio.conf.bak
+  cp MKINITCPIO_CONFSRC /etc/mkinitcpio.conf
 
   # Set hostname
   echo "HOSTNAME_PLACEHOLDER" > /etc/hostname
   # Configure hosts file
-  cat > /etc/hosts << 'HOSTS_EOF'
-  127.0.0.1   localhost
-  ::1         localhost
-  127.0.1.1   HOSTNAME_PLACEHOLDER.LANDOMAIN_PLACEHOLDER.DOMAINSUFFIX_PLACEHOLDER HOSTNAME_PLACEHOLDER
-  HOSTS_EOF
+  mv /etc/hosts /etc/hosts.bak
+  echo "127.0.0.1   localhost" > /etc/hosts
+  echo "::1         localhost" >> /etc/hosts
+  echo "127.0.1.1   HOSTNAME_PLACEHOLDER.LANDOMAIN_PLACEHOLDER.DOMAINSUFFIX_PLACEHOLDER HOSTNAME_PLACEHOLDER" >> /etc/hosts
 
   # Install essential gaming prereq packages
   echo "Installing essential packages..."
@@ -215,26 +203,24 @@ create_chroot_script() {
   USRVOL_UUID=$(blkid -s UUID -o value USRVOL_PART_PLACEHOLDER)
 
   # Create boot entry
-  cat > /boot/loader/entries/arch.conf << 'BOOTENTRY_EOF'
-  title   Arch Linux (Zen)
-  linux   /vmlinuz-linux-zen
-  initrd  /initramfs-linux-zen.img
-  options root=UUID=$ROOT_UUID rootflags=subvol=@ rw quiet splash loglevel=3 rd.udev.log_priority=3 vt.global_cursor_default=0 preempt=full threadirqs idle=halt processor.max_cstate=1 nohz=on nohz_full=1-15 amd_pstate=active rcu_nocbs=1-15 udev.children_max=2 usbcore.autosuspend=-1 pcie_aspm=performance nvme_core.poll_queues=1 nowatchdog
-  BOOTENTRY_EOF
+  mv /boot/loader/entries/arch.conf /boot/loader/entries/arch.conf.bak
+  echo "title   Arch Linux (Zen)" > /boot/loader/entries/arch.conf
+  echo "linux   /vmlinuz-linux-zen" >> /boot/loader/entries/arch.conf
+  echo "initrd  /initramfs-linux-zen.img" >> /boot/loader/entries/arch.conf
+  echo "options root=UUID=$ROOT_UUID rootflags=subvol=@ rw quiet splash loglevel=3 rd.udev.log_priority=3 vt.global_cursor_default=0 preempt=full threadirqs idle=halt processor.max_cstate=1 nohz=on nohz_full=1-15 amd_pstate=active rcu_nocbs=1-15 udev.children_max=2 usbcore.autosuspend=-1 pcie_aspm=performance nvme_core.poll_queues=1 nowatchdog" >> /boot/loader/entries/arch.conf
 
   # Configure systemd-boot
-  cat > /boot/loader/loader.conf << 'SYSTEMD_EOF'
-  default arch.conf
-  timeout 3
-  console-mode max
-  editor no
-  SYSTEMD_EOF
+  mv /boot/loader/loader.conf /boot/loader/loader.conf.bak
+  echo "default arch.conf" > /boot/loader/loader.conf
+  echo "timeout 3" >> /boot/loader/loader.conf
+  echo "console-mode max" >> /boot/loader/loader.conf
+  echo "editor no" >> /boot/loader/loader.conf
 
   # Configure crypttab for user volume
   echo "Configuring crypttab..."
-  cat > /etc/crypttab << 'CRYPTTAB_EOF'
-  # <name>       <device>                         <password>    <options>
-  usrvol         UUID=$USRVOL_UUID                none          luks
+  mv /etc/crypttab /etc/crypttab.bak
+  echo "# <name>       <device>                         <password>    <options>" > /etc/crypttab
+  echo "usrvol         UUID=$USRVOL_UUID                none          luks" >> /etc/crypttab
   CRYPTTAB_EOF
 
   # Configure Plymouth theme
@@ -277,5 +263,6 @@ EOF
   sed -i "s|TIMEZONE_PLACEHOLDER|${TIMEZONE}|g" /mnt/configure_system.sh
   sed -i "s|SYSVOL_PART_PLACEHOLDER|${SYSVOL_PART}|g" /mnt/configure_system.sh
   sed -i "s|USRVOL_PART_PLACEHOLDER|${USRVOL_PART}|g" /mnt/configure_system.sh
+  sed -i "s|MKINITCPIO_CONFSRC|${MKINITCPIO_CONF}|g" /mnt/configure_system.sh
   chmod +x /mnt/configure_system.sh
 }
