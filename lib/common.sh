@@ -38,45 +38,71 @@ move_log() {
     fi
 }
 
+￼
+￼v8
+￼
+￼
+#!/bin/bash
+# lib/common.sh - Common utilities and logging setup
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Setup logging
+setup_logging() {
+    local log_name="archinstall_${HOSTNAME:-unknown}_$(date +"%Y-%m-%d-%H%M").log"
+    outlog="/var/log/$log_name"
+    target_log="/mnt/var/log/$log_name"
+    
+    # Ensure log directory exists
+    mkdir -p /var/log
+    
+    # Logging function
+    log() {
+        while read
+        do
+            printf "%(%Y-%m-%d_%T)T %s\n" -1 "$REPLY" | tee -a "$outlog"
+        done
+    }
+    
+    # Redirect all output through logging
+    exec 3>&1 1>> >(log) 4>&2 2>&1
+    set -x
+}
+
+# Move log to target system
+move_log() {
+    if [[ -f "$outlog" ]] && [[ -d "/mnt/var/log" ]]; then
+        cp "$outlog" "$target_log"
+        outlog="$target_log"
+        echo "Log moved to installed system: $target_log" >&3
+    fi
+}
+
 # Simple status messages (bypass logging for user feedback)
 status() {
-    if [[ -e /proc/self/fd/3 ]]; then
-        echo -e "[04:58:10] " >&3
-    else
-        echo -e "[04:58:10] "
-    fi
+    echo -e "${GREEN}[$(date '+%H:%M:%S')] $1${NC}" >&3 2>/dev/null || echo -e "${GREEN}[$(date '+%H:%M:%S')] $1${NC}"
 }
 
 warn() {
-    if [[ -e /proc/self/fd/3 ]]; then
-        echo -e "[04:58:10] WARN: " >&3
-    else
-        echo -e "[04:58:10] WARN: "
-    fi
+    echo -e "${YELLOW}[$(date '+%H:%M:%S')] WARN: $1${NC}" >&3 2>/dev/null || echo -e "${YELLOW}[$(date '+%H:%M:%S')] WARN: $1${NC}"
 }
 
 error() {
-    if [[ -e /proc/self/fd/3 ]]; then
-        echo -e "[04:58:10] ERROR: " >&3
-    else
-        echo -e "[04:58:10] ERROR: "
-    fi
+    echo -e "${RED}[$(date '+%H:%M:%S')] ERROR: $1${NC}" >&3 2>/dev/null || echo -e "${RED}[$(date '+%H:%M:%S')] ERROR: $1${NC}"
     exit 1
 }
 
 # Confirmation prompt
 confirm() {
     if command -v gum &> /dev/null; then
-        gum confirm ""
+        gum confirm "$1"
     else
-        if [[ -e /proc/self/fd/3 ]]; then
-            read -p " [y/N]: " -n 1 -r >&3
-            echo >&3
-        else
-            read -p " [y/N]: " -n 1 -r
-            echo
-        fi
-        [[  =~ ^[Yy]$ ]]
+        { read -p "$(echo -e ${YELLOW}$1${NC}) [y/N]: " -n 1 -r >&3 && echo >&3; } 2>/dev/null || { read -p "$(echo -e ${YELLOW}$1${NC}) [y/N]: " -n 1 -r && echo; }
+        [[ $REPLY =~ ^[Yy]$ ]]
     fi
 }
 
