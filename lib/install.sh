@@ -16,8 +16,8 @@ install_base_system() {
   # Mkinitcpio configuration
   echo "Configuring mkinitcpio..."
   sed -i \
-    -e 's/^\?HOOKS=.*microcode.*kms.*consolefont.*/#&/' \
-    -e '/#^\?HOOKS=.*microcode.*kms.*consolefont.*/a \\n\# CUSTOM SYSTEMD HOOK\nHOOKS=(base systemd autodetect microcode plymouth modconf kms keyboard keymap sd-vconsole sd-encrypt block filesystems fsck)/' \
+    -e 's/^HOOKS=.*microcode.*kms.*consolefont.*/#&/' \
+    -e '/^#\?HOOKS=.*microcode.*kms.*consolefont.*/a \\n\# CUSTOM SYSTEMD HOOK\nHOOKS=(base systemd autodetect microcode plymouth modconf kms keyboard keymap sd-vconsole sd-encrypt block filesystems fsck)/' \
     -e '/^#\?COMPRESSION="zstd"/s/^#//' \
     -e '/^#\?COMPRESSION_OPTIONS=.*/s/^#//' \
     -e '/^COMPRESSION_OPTIONS=/s/()/(-15)/' \
