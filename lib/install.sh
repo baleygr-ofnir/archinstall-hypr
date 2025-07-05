@@ -63,23 +63,24 @@ sleep 2
 
 # User configuration
 echo "Creating user USERNAME_PLACEHOLDER..."
-useradd -m -G realtime,storage,wheel -s /bin/zsh "USERNAME_PLACEHOLDER"
+useradd -m -G realtime,storage,wheel -s /bin/zsh USERNAME_PLACEHOLDER
 chpasswd --encrypted << 'USER_EOF'
-"USERNAME_PLACEHOLDER":$(mkpasswd -m sha-512 -s <<< "USER_PASSWORD_PLACEHOLDER")
+USERNAME_PLACEHOLDER:$(mkpasswd -m sha-512 -s <<< "USER_PASSWORD_PLACEHOLDER")
 USER_EOF
 # Root configuration
 chpasswd --encrypted << 'ROOT_EOF'
 root:$(mkpasswd -m sha-512 -s <<< "ROOT_PASSWORD_PLACEHOLDER")
 ROOT_EOF
+sleep 2
 
 # Install paru - rust-based AUR helper
 git clone https://aur.archlinux.org/paru.git /tmp/paru
-chown -R "USERNAME_PLACEHOLDER" /tmp/paru
+chown -R USERNAME_PLACEHOLDER /tmp/paru
 cd /tmp/paru
-sudo -u "USERNAME_PLACEHOLDER" makepkg -si --noconfirm
-#pacman -U --noconfirm paru-*.pkg.tar.zst
+sudo -u USERNAME_PLACEHOLDER makepkg -s
+pacman -U --noconfirm paru-*.pkg.tar.zst
 sleep 2
-sudo -u "USERNAME_PLACEHOLDER" paru -S --noconfirm oh-my-zsh-git
+sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm oh-my-zsh-git
 
 # Set locale
 echo "Setting locale..."

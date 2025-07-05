@@ -74,23 +74,23 @@ get_username() {
 get_user_password() {
   while true; do
     if command -v gum &> /dev/null; then
-      USER_PASSWORD=$(gum input --password --placeholder "(minimum 6 characters)" --prompt "Enter user password: ")
+      USER_PASSWORD="$(gum input --password --placeholder "(minimum 6 characters)" --prompt "Enter user password: ")"
       # shellcheck disable=SC2155
-      local confirm_password=$(gum input --password --prompt "Confirm user password: ")
+      local confirm_password="$(gum input --password --prompt "Confirm user password: ")"
     elif command -v dialog &> /dev/null; then
-      USER_PASSWORD=$(dialog --title "User Configuration" --passwordbox "Enter user password:" 8 40 3>&1 1>&2 2>&3)
+      USER_PASSWORD="$(dialog --title "User Configuration" --passwordbox "Enter user password:" 8 40 3>&1 1>&2 2>&3)"
       # shellcheck disable=SC2155
-      local confirm_password=$(dialog --title "User Configuration" --passwordbox "Confirm password:" 8 40 3>&1 1>&2 2>&3)
+      local confirm_password="$(dialog --title "User Configuration" --passwordbox "Confirm password:" 8 40 3>&1 1>&2 2>&3)"
     else
       # shellcheck disable=SC2162
-      read -s -p "Enter user password: " USER_PASSWORD
+      read -r -s -p "Enter user password: " USER_PASSWORD
       echo
       # shellcheck disable=SC2162
-      read -s -p "Confirm password: " confirm_password
+      read -r -s -p "Confirm password: " confirm_password
       echo
     fi
 
-    if [[ "$USER_PASSWORD" == "$confirm_password" ]] && [[ ${#USER_PASSWORD} -ge 6 ]]; then
+    if [[ $USER_PASSWORD == $confirm_password ]] && [[ ${#USER_PASSWORD} -ge 6 ]]; then
       break
     else
       if command -v gum &> /dev/null; then
@@ -106,13 +106,13 @@ get_user_password() {
 get_root_password() {
   while true; do
     if command -v gum &> /dev/null; then
-      ROOT_PASSWORD=$(gum input --password --placeholder "(minimum 6 characters)" --prompt "Enter secure root password: ")
+      ROOT_PASSWORD="$(gum input --password --placeholder "(minimum 6 characters)" --prompt "Enter secure root password: ")"
       # shellcheck disable=SC2155
-      local confirm_root_password=$(gum input --password --prompt "Confirm root password: ")
+      local confirm_root_password="$(gum input --password --prompt "Confirm root password: ")"
     elif command -v dialog &> /dev/null; then
-      ROOT_PASSWORD=$(dialog --title "User Configuration" --passwordbox "Enter secure root password:" 8 40 3>&1 1>&2 2>&3)
+      ROOT_PASSWORD="$(dialog --title "User Configuration" --passwordbox "Enter secure root password:" 8 40 3>&1 1>&2 2>&3)"
       # shellcheck disable=SC2155
-      local confirm_root_password=$(dialog --title "Root Configuration" --passwordbox "Confirm root password:" 8 40 3>&1 1>&2 2>&3)
+      local confirm_root_password="$(dialog --title "Root Configuration" --passwordbox "Confirm root password:" 8 40 3>&1 1>&2 2>&3)"
     else
       # shellcheck disable=SC2162
       read -s -p "Enter secure root password: " ROOT_PASSWORD
@@ -122,7 +122,7 @@ get_root_password() {
       echo
     fi
 
-    if [[ "$ROOT_PASSWORD" == "$confirm_root_password" ]] && [[ ${#ROOT_PASSWORD} -ge 6 ]]; then
+    if [[ $ROOT_PASSWORD == $confirm_root_password ]] && [[ ${#ROOT_PASSWORD} -ge 6 ]]; then
       break
     else
       if command -v gum &> /dev/null; then
