@@ -43,19 +43,23 @@ sed -i -e '/^#\?\[extra\]/s/^#//' \
     /etc/pacman.conf
 pacman -Syu --noconfirm git sudo realtime-privileges
 sleep 2
-pacman -S rustup
-sleep 2
+pacman -S --noconfirm rustup
 rustup default stable
+rustup install stable
+rustup update
+sleep 2
 
 # User configuration
 echo "Creating user USERNAME_PLACEHOLDER..."
 useradd -m -G realtime,storage,wheel -s /bin/bash USERNAME_PLACEHOLDER
+chpasswd --encrypted << EOF
+USERNAME_PLACEHOLDER:$(mkpasswd -m sha-512 -s <<< "USER_PASSWORD_PLACEHOLDER")
+EOF
 
-# Set user password
-echo "USERNAME_PLACEHOLDER:USER_PASSWORD_PLACEHOLDER" | passwd --stdin USERNAME_PLACEHOLDER
-
-echo "USER_PASSWORD_PLACEHOLDER" | passwd --stdin
-
+# Root configuration
+chpasswd --encrypted << EOF
+root:$(mkpasswd -m sha-512 -s <<< "USER_PASSWORD_PLACEHOLDER")
+EOF
 # Sudo config
 sed -i -e '/^#\? %wheel.*) ALL.*/s/^# //' /etc/sudoers
 
@@ -63,7 +67,7 @@ sed -i -e '/^#\? %wheel.*) ALL.*/s/^# //' /etc/sudoers
 git clone https://aur.archlinux.org/paru.git /tmp/paru
 chown -R USERNAME_PLACEHOLDER /tmp/paru
 cd /tmp/paru
-sudo -u USERNAME_PLACEHOLDER makepkg
+sudo -u USERNAME_PLACEHOLDER makepkg -s
 pacman -U --noconfirm paru-*.pkg.tar.zst
 sleep 2
 
@@ -89,6 +93,7 @@ fi
 sleep 5
 
 # Cleanup
+paru -Scc --noconfirm
 rm -rf /tmp/paru
 
 # Set hostname
