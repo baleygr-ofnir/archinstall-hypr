@@ -3,27 +3,22 @@
 
 set -e
 
-INSTALL_DIR="/tmp/archinstall"
-
-# Create directory structure
-setup_directory() {
-    mkdir -p "$INSTALL_DIR/lib"
-    cd "$INSTALL_DIR"
-}
+INSTALL_DIR="${PWD}"
 
 # Download or create all script files
-create_scripts() {
+#create_scripts() {
     # You would typically download these from a repository
     # For now, create them locally or copy from your development directory
 
-    echo "Setting up installation scripts..."
-    echo "Please ensure all script files are in the correct locations:"
-    echo "  $INSTALL_DIR/main.sh"
-    echo "  $INSTALL_DIR/lib/common.sh"
-    echo "  $INSTALL_DIR/lib/config.sh"
-    echo "  $INSTALL_DIR/lib/partitioning.sh"
-    echo "  $INSTALL_DIR/lib/install.sh"
-}
+  #  echo "Setting up installation scripts..."
+ #   echo "Please ensure all script files are in the correct locations:"
+#    echo "  $INSTALL_DIR/main.sh"
+    #echo "  $INSTALL_DIR/lib/common.sh"
+   # echo "  $INSTALL_DIR/lib/config.sh"
+  #  echo "  $INSTALL_DIR/lib/partitioning.sh"
+ #   echo "  $INSTALL_DIR/lib/install.sh"
+#    echo "  $INSTALL_DIR/lib/ml4w-hyprland.sh"
+#}
 
 # Make scripts executable
 set_permissions() {
@@ -44,8 +39,8 @@ main() {
         exit 1
     fi
 
-    setup_directory
-    create_scripts
+#    setup_directory
+#    create_scripts
     set_permissions
 
     echo "Starting Arch Linux installation..."

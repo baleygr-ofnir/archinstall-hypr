@@ -11,10 +11,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DISK=""
 HOSTNAME=""
 USERNAME=""
+# shellcheck disable=SC2034
 USER_PASSWORD=""
+# shellcheck disable=SC2034
 LUKS_PASSWORD=""
+# shellcheck disable=SC2034
+TIMEZONE=""
 EFI_SIZE="1024M"
 SYSVOL_SIZE="66560M"
+# shellcheck disable=SC2034
 BTRFS_OPTS="defaults,noatime,compress=zstd:3,discard=async,space_cache=v2"
 
 # Source all modules

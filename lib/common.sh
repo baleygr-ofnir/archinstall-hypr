@@ -9,6 +9,7 @@ NC='\033[0m' # No Color
 
 # Setup logging
 setup_logging() {
+    # shellcheck disable=SC2155
     local log_name="archinstall_${HOSTNAME:-unknown}_$(date +"%Y-%m-%d-%H%M").log"
     outlog="/var/log/$log_name"
     target_log="/mnt/var/log/$log_name"
@@ -18,6 +19,7 @@ setup_logging() {
 
     # Logging function
     log() {
+        # shellcheck disable=SC2162
         while read
         do
             printf "%(%Y-%m-%d_%T)T %s\n" -1 "$REPLY" | tee -a "$outlog"
@@ -57,7 +59,7 @@ confirm() {
     if command -v gum &> /dev/null; then
         gum confirm "$1"
     else
-        { read -p "$(echo -e ${YELLOW}$1${NC}) [y/N]: " -n 1 -r >&3 && echo >&3; } 2>/dev/null || { read -p "$(echo -e ${YELLOW}$1${NC}) [y/N]: " -n 1 -r && echo; }
+        { read -p "$(echo -e "${YELLOW}" "$1" "${NC}") [y/N]: " -n 1 -r >&3 && echo >&3; } 2>/dev/null || { read -p "$(echo -e "${YELLOW}" "$1" "${NC}") [y/N]: " -n 1 -r && echo; }
         [[ $REPLY =~ ^[Yy]$ ]]
     fi
 }
@@ -70,23 +72,80 @@ install_tui_tools() {
     fi
 }
 
-# Validate hostname format
+# Hostname validation function
 validate_hostname() {
     local hostname="$1"
-    [[ -n "$hostname" ]] && [[ "$hostname" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$ ]]
+
+    # Check length (1-63 characters)
+    if [[ ${#hostname} -lt 1 || ${#hostname} -gt 63 ]]; then
+        return 1
+    fi
+
+    # Check format: letters, numbers, hyphens (no leading/trailing hyphens)
+    if [[ "$hostname" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$ ]]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
-# Validate username format
+# Username validation function
 validate_username() {
     local username="$1"
-    [[ -n "$username" ]] && [[ "$username" =~ ^[a-z_]([a-z0-9_-]{0,31}|[a-z0-9_-]{0,30}\$)$ ]]
+
+    # Check length (1-32 characters)
+    if [[ ${#username} -lt 1 || ${#username} -gt 32 ]]; then
+        return 1
+    fi
+
+    # Check format: lowercase letters, numbers, underscore, hyphen (must start with letter)
+    if [[ "$username" =~ ^[a-z][a-z0-9_-]*$ ]]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
-# Check if block device exists
+# Timezone validation function
+validate_timezone() {
+    local timezone="$1"
+
+    # Check basic format (Continent/City)
+    if [[ ! "$timezone" =~ ^[A-Za-z_]+/[A-Za-z_]+$ ]]; then
+        return 1
+    fi
+
+    # Check if timezone exists in system
+    if command -v timedatectl &> /dev/null; then
+        timedatectl list-timezones | grep -q "^$timezone$"
+        return $?
+    elif [[ -f "/usr/share/zoneinfo/$timezone" ]]; then
+        return 0
+    else
+        # Fallback: check common timezones
+        case "$timezone" in
+            America/*|Europe/*|Asia/*|Africa/*|Australia/*|Pacific/*|Arctic/*|Atlantic/*|Indian/*)
+                return 0
+                ;;
+            *)
+                return 1
+                ;;
+        esac
+    fi
+}
+
+# Block device validation function
 check_block_device() {
     local device="$1"
-    [[ -b "$device" ]]
+
+    # Check if device exists and is a block device
+    if [[ -b "$device" ]]; then
+        return 0
+    else
+        return 1
+    fi
 }
+
 
 # Get partition names based on disk type
 get_partition_name() {
@@ -113,4 +172,4 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 # Export functions for use in sourced scripts
-export -f status warn error confirm install_tui_tools validate_hostname validate_username check_block_device get_partition_name move_log
+export -f status warn error confirm install_tui_tools validate_hostname validate_username validate_timezone check_block_device get_partition_name move_log

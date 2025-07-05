@@ -85,23 +85,23 @@ mount_filesystems() {
     status "Mounting filesystems..."
 
     # Mount root subvolume
-    mount -o $BTRFS_OPTS,subvol=@ "$SYSVOL_PART" /mnt
+    mount -o "$BTRFS_OPTS",subvol=@ "$SYSVOL_PART" /mnt
 
     # Create mount points
     mkdir -p /mnt/{boot,var,var/{cache,log,tmp},tmp,home,opt,root,.snapshots,.swapvol}
 
     # Mount system subvolumes
-    mount -o $BTRFS_OPTS,subvol=@var "$SYSVOL_PART" /mnt/var
-    mount -o $BTRFS_OPTS,subvol=@var/cache "$SYSVOL_PART" /mnt/var/cache
-    mount -o $BTRFS_OPTS,subvol=@var/log "$SYSVOL_PART" /mnt/var/log
-    mount -o $BTRFS_OPTS,subvol=@var/tmp "$SYSVOL_PART" /mnt/var/tmp
-    mount -o $BTRFS_OPTS,subvol=@tmp "$SYSVOL_PART" /mnt/tmp
-    mount -o $BTRFS_OPTS,subvol=@snapshots "$SYSVOL_PART" /mnt/.snapshots
-    mount -o $BTRFS_OPTS,subvol=@swap "$SYSVOL_PART" /mnt/.swapvol
+    mount -o "$BTRFS_OPTS",subvol=@var "$SYSVOL_PART" /mnt/var
+    mount -o "$BTRFS_OPTS",subvol=@var/cache "$SYSVOL_PART" /mnt/var/cache
+    mount -o "$BTRFS_OPTS",subvol=@var/log "$SYSVOL_PART" /mnt/var/log
+    mount -o "$BTRFS_OPTS",subvol=@var/tmp "$SYSVOL_PART" /mnt/var/tmp
+    mount -o "$BTRFS_OPTS",subvol=@tmp "$SYSVOL_PART" /mnt/tmp
+    mount -o "$BTRFS_OPTS",subvol=@snapshots "$SYSVOL_PART" /mnt/.snapshots
+    mount -o "$BTRFS_OPTS",subvol=@swap "$SYSVOL_PART" /mnt/.swapvol
 
     # Mount user subvolumes
-    mount -o $BTRFS_OPTS,subvol=@home /dev/mapper/usrvol /mnt/home
-    mount -o $BTRFS_OPTS,subvol=@opt /dev/mapper/usrvol /mnt/opt
+    mount -o "$BTRFS_OPTS",subvol=@home /dev/mapper/usrvol /mnt/home
+    mount -o "$BTRFS_OPTS",subvol=@opt /dev/mapper/usrvol /mnt/opt
 
     # Mount EFI partition
     mount "$EFI_PART" /mnt/boot
