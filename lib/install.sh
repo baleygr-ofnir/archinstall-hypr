@@ -41,7 +41,7 @@ sed -i -e '/^#\?\[extra\]/s/^#//' \
     -e '/^#\?\[multilib\]/s/^#//' \
     -e '/^\[multilib\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
     /etc/pacman.conf
-pacman -Sy --noconfirm git sudo realtime-privileges cargo rustup
+pacman -Syu --noconfirm git sudo realtime-privileges cargo rust
 sleep 2
 
 # User configuration
