@@ -13,6 +13,7 @@ HOSTNAME=""
 USERNAME=""
 # shellcheck disable=SC2034
 USER_PASSWORD=""
+ROOT_PASSWORD=""
 # shellcheck disable=SC2034
 LUKS_PASSWORD=""
 # shellcheck disable=SC2034

@@ -58,8 +58,9 @@ EOF
 
 # Root configuration
 chpasswd --encrypted << EOF
-root:$(mkpasswd -m sha-512 -s <<< "USER_PASSWORD_PLACEHOLDER")
+root:$(mkpasswd -m sha-512 -s <<< "ROOT_PASSWORD_PLACEHOLDER")
 EOF
+
 # Sudo config
 sed -i -e '/^#\? %wheel.*) ALL.*/s/^# //' /etc/sudoers
 
@@ -380,6 +381,8 @@ CHROOT_EOF
     sed -i "s/HOSTNAME_PLACEHOLDER/$HOSTNAME/g" /mnt/configure_system.sh
     sed -i "s/USERNAME_PLACEHOLDER/$USERNAME/g" /mnt/configure_system.sh
     sed -i "s/USER_PASSWORD_PLACEHOLDER/$USER_PASSWORD/g" /mnt/configure_system.sh
+    sed -i "s/ROOT_PASSWORD_PLACEHOLDER/$ROOT_PASSWORD/g" /mnt/configure_system.sh
+    sed -i "s/TIMEZONE_PLACEHOLDER/$TIMEZONE/g" /mnt/configure_system.sh
     sed -i "s|SYSVOL_PART_PLACEHOLDER|$SYSVOL_PART|g" /mnt/configure_system.sh
     sed -i "s|USRVOL_PART_PLACEHOLDER|$USRVOL_PART|g" /mnt/configure_system.sh
 
