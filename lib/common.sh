@@ -160,4 +160,4 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 # Export functions for use in sourced scripts
-export -f setup_logging enable_command_tracing confirm install_tui_tools validate_hostname validate_username validate_timezone check_block_device get_partition_name move_log
+export -f setup_logging enable_command_tracing move_log confirm install_tui_tools validate_hostname validate_username validate_timezone check_block_device get_partition_name move_log cleanup
