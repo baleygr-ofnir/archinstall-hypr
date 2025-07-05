@@ -27,7 +27,6 @@ source "${SCRIPT_DIR}/lib/common.sh"
 source "${SCRIPT_DIR}/lib/config.sh"
 source "${SCRIPT_DIR}/lib/partitioning.sh"
 source "${SCRIPT_DIR}/lib/install.sh"
-source "${SCRIPT_DIR}/lib/ml4w-hyprland.sh"
 
 # Main installation flow
 main() {
