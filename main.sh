@@ -31,8 +31,8 @@ source "${SCRIPT_DIR}/lib/install.sh"
 # Main installation flow
 main() {
     check_requirements
-    setup_interactive_config
     setup_logging
+    setup_interactive_config
     confirm_installation
     perform_installation
     cleanup_and_finish
