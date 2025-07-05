@@ -199,7 +199,7 @@ get_timezone() {
 
     # Validate timezone exists
     if [[ ! -f "/usr/share/zoneinfo/$TIMEZONE" ]]; then
-        echo "Timezone $TIMEZONE not found, defaulting to Europe/London"
+        echo "Timezone $TIMEZONE not found, defaulting to Europe/Stockholm"
         TIMEZONE="Europe/Stockholm"
     fi
 }

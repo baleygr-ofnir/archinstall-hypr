@@ -41,15 +41,28 @@ sed -i -e '/^#\?\[extra\]/s/^#//' \
     -e '/^#\?\[multilib\]/s/^#//' \
     -e '/^\[multilib\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
     /etc/pacman.conf
-pacman -Sy --noconfirm git
+pacman -Sy --noconfirm git sudo
 
-# Try to install en_SE locale from AUR
+# User configuration
+status "Creating user USERNAME_PLACEHOLDER..."
+useradd -m -G realtime,storage,wheel -s /bin/bash USERNAME_PLACEHOLDER
+
+# Set user password
+echo "USERNAME_PLACEHOLDER:USER_PASSWORD_PLACEHOLDER" | passwd --stdin USERNAME_PLACEHOLDER
+
+echo "USER_PASSWORD_PLACEHOLDER" | passwd --stdin
+
+# Sudo config
+sed -i -e '/^#\? %wheel.*) ALL.*/s/^# //' /etc/sudoers
+
+# Install paru from AUR
 cd /tmp
-git clone https://aur.archlinux.org/en_se.git
-cd en_se
-chown -R nobody .
+git clone https://aur.archlinux.org/paru.git
+cd paru
+chown -R USERNAME_PLACEHOLDER .
+su - USERNAME_PLACEHOLDER -c "makepkg -si --noconfirm"
 
-if sudo -u nobody makepkg && pacman -U --noconfirm *.tar.xz; then
+if su - USERNAME_PLACEHOLDER -c "paru -S --noconfirm en_se"; then
     echo "Installed en_SE locale from AUR"
     echo "en_SE.UTF-8 UTF-8" >> /etc/locale.gen
     locale-gen
@@ -70,7 +83,7 @@ EOF
 fi
 
 # Cleanup
-rm -rf /tmp/en_se
+rm -rf /tmp/paru
 
 # Set hostname
 echo "HOSTNAME_PLACEHOLDER" > /etc/hostname
@@ -84,15 +97,12 @@ EOF
 
 # Install essential packages
 echo "Installing essential packages..."
-pacman -S --needed --noconfirm \
+pacman -Syu --needed --noconfirm \
     efibootmgr \
     networkmanager \
-    sudo \
     neovim \
     plymouth \
     pacman-contrib \
-    docker \
-    docker-compose \
     tmux \
     obs-studio \
     flatpak \
@@ -111,9 +121,9 @@ echo "Configuring mkinitcpio..."
 sed -i \
   -e 's/^\?HOOKS=.*microcode.*kms.*consolefont.*/#&/' \
   -e '/#^\?HOOKS=.*microcode.*kms.*consolefont.*/a \\n\# CUSTOM SYSTEMD HOOK\nHOOKS=(base systemd autodetect microcode plymouth modconf kms keyboard keymap sd-vconsole sd-encrypt block filesystems fsck)/' \
-  -e '/^#\?COMPRESSION="zstd"/s/^#//' \
-  -e '/^#\?COMPRESSION_OPTIONS=.*/s/^#//' \
-  -e '/^COMPRESSION_OPTIONS=/s/()/(-15)/' \
+#  -e '/^#\?COMPRESSION="zstd"/s/^#//' \
+#  -e '/^#\?COMPRESSION_OPTIONS=.*/s/^#//' \
+#  -e '/^COMPRESSION_OPTIONS=/s/()/(-15)/' \
   /etc/mkinitcpio.conf
 mkinitcpio -P
 
@@ -130,7 +140,7 @@ cat > /boot/loader/entries/arch.conf << EOF
 title   Arch Linux (Zen)
 linux   /vmlinuz-linux-zen
 initrd  /initramfs-linux-zen.img
-options root=UUID=$ROOT_UUID rootflags=subvol=@ rw quiet splash loglevel=3 rd.udev.log_priority=3 vt.global_cursor_default=0
+options root=UUID=$ROOT_UUID rootflags=subvol=@ rw quiet splash loglevel=3 rd.udev.log_priority=3 vt.global_cursor_default=0 preempt=full threadirqs idle=halt processor.max_cstate=1 nohz=on nohz_full=1-15 amd_pstate=active rcu_nocbs=1-15 udev.children_max=2 usbcore.autosuspend=-1 pcie_aspm=performance nvme_core.poll_queues=1 nowatchdog
 EOF
 
 # Configure systemd-boot
@@ -149,14 +159,11 @@ usrvol         UUID=$USRVOL_UUID                none          luks
 EOF
 
 # Configure Plymouth theme
-plymouth-set-default-theme monoarch
-plymouth-set-default-theme --rebuild-initrd
+su - USERNAME_PLACEHOLDER -c "paru -S --noconfirm plymouth-theme-monoarch"
+plymouth-set-default-theme -R monoarch
 
 # Enable NetworkManager
 systemctl enable NetworkManager
-
-# Enable Docker
-systemctl enable docker
 
 # Enable package cache cleanup
 echo "Enabling automatic package cache cleanup..."
@@ -179,18 +186,6 @@ check_user() {
     if [[ $EUID -eq 0 ]]; then
         echo "Don't run this as root. Run as your user account."
         exit 1
-    fi
-}
-
-install_aur_helper() {
-    if ! command -v paru &> /dev/null; then
-        echo "Installing paru AUR helper..."
-        cd /tmp
-        git clone https://aur.archlinux.org/paru.git
-        cd paru
-        makepkg -si --noconfirm
-        cd ~
-        rm -rf /tmp/paru
     fi
 }
 
