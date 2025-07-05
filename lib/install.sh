@@ -82,7 +82,6 @@ create_chroot_script() {
   # Set locale
   echo "Setting locale..."
   mv /etc/locale.gen /etc/locale.gen.bak
-  mv /etc/locale.conf /etc/locale.conf.bak
   # sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm en_se
   git clone https://aur.archlinux.org/en_se.git /tmp/en_se
   chown -R USERNAME_PLACEHOLDER /tmp/en_se
