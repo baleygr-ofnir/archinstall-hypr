@@ -11,27 +11,6 @@ install_base_system() {
     btrfs-progs \
     base-devel \
     sudo
-  # Sudo config
-  sed -i -e '/^#\? %wheel.*) ALL.*/s/^# //' /mnt/etc/sudoers
-  # Prereqs for arch-chroot env
-  echo "Enabling extra and multilib repositories"
-  sed -i \
-    -e '/^#\?\[extra\]/s/^#//' \
-    -e '/^\[extra\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
-    -e '/^#\?\[multilib\]/s/^#//' \
-    -e '/^\[multilib\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
-    /mnt/etc/pacman.conf
-  arch-chroot /mnt pacman -Syu --noconfirm --needed \
-    efibootmgr \
-    firewalld \
-    networkmanager \
-    nmap \
-    neovim \
-    plymouth \
-    pacman-contrib \
-    git \
-    realtime-privileges \
-    zsh
   # Generate fstab
   genfstab -U /mnt >> /mnt/etc/fstab
 }
@@ -49,12 +28,34 @@ create_chroot_script() {
 cat > /mnt/configure_system.sh << 'CHROOT_EOF'
 #!/bin/bash
 # Configuration script for chroot environment
-#set -e
+set -e
 
 # Set timezone
 echo "Setting timezone..."
 ln -sf /usr/share/zoneinfo/TIMEZONE_PLACEHOLDER /etc/localtime
 hwclock --systohc
+
+# Sudo config
+sed -i -e '/^#\? %wheel.*) ALL.*/s/^# //' /etc/sudoers
+# Prereqs for arch-chroot env
+echo "Enabling extra and multilib repositories"
+sed -i \
+  -e '/^#\?\[extra\]/s/^#//' \
+  -e '/^\[extra\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
+  -e '/^#\?\[multilib\]/s/^#//' \
+  -e '/^\[multilib\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
+  /mnt/etc/pacman.conf
+pacman -Syu --noconfirm --needed \
+  efibootmgr \
+  firewalld \
+  networkmanager \
+  nmap \
+  neovim \
+  plymouth \
+  pacman-contrib \
+  git \
+  realtime-privileges \
+  zsh
 
 # rust install
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -63,14 +64,17 @@ sleep 2
 
 # User configuration
 echo "Creating user USERNAME_PLACEHOLDER..."
-useradd -m -G realtime,storage,wheel -s /bin/zsh USERNAME_PLACEHOLDER
-chpasswd --encrypted << 'USER_EOF'
-USERNAME_PLACEHOLDER:$(mkpasswd -m sha-512 -s <<< "USER_PASSWORD_PLACEHOLDER")
-USER_EOF
+useradd -m -G realtime,wheel -s /bin/zsh USERNAME_PLACEHOLDER
+#chpasswd --encrypted << 'USER_EOF'
+#USERNAME_PLACEHOLDER:$(mkpasswd -m sha-512 -s <<< 'USER_PASSWORD_PLACEHOLDER')
+#USER_EOF
+echo 'USERNAME_PLACEHOLDER:USER_PASSWORD_PLACEHOLDER' | chpasswd -c SHA512
+
 # Root configuration
-chpasswd --encrypted << 'ROOT_EOF'
-root:$(mkpasswd -m sha-512 -s <<< "ROOT_PASSWORD_PLACEHOLDER")
-ROOT_EOF
+#chpasswd --encrypted << 'ROOT_EOF'
+#root:$(mkpasswd -m sha-512 -s <<< 'ROOT_PASSWORD_PLACEHOLDER')
+#ROOT_EOF
+echo 'root:ROOT_PASSWORD_PLACEHOLDER' | chpasswd -c SHA512
 sleep 2
 
 # Install paru - rust-based AUR helper
@@ -275,12 +279,12 @@ mkinitcpio -P
 echo "Base configuration complete!\nPost-installation recommendations:\n  - Set up btrfs snapshots with timeshift or snapper"
 CHROOT_EOF
   # Replace placeholders
-  sed -i "s/HOSTNAME_PLACEHOLDER/$HOSTNAME/g" /mnt/configure_system.sh
-  sed -i "s/USERNAME_PLACEHOLDER/$USERNAME/g" /mnt/configure_system.sh
-  sed -i "s/USER_PASSWORD_PLACEHOLDER/$USER_PASSWORD/g" /mnt/configure_system.sh
-  sed -i "s/ROOT_PASSWORD_PLACEHOLDER/$ROOTY_PASSWORD/g" /mnt/configure_system.sh
-  sed -i "s|TIMEZONE_PLACEHOLDER|$TIMEZONE|g" /mnt/configure_system.sh
-  sed -i "s|SYSVOL_PART_PLACEHOLDER|$SYSVOL_PART|g" /mnt/configure_system.sh
-  sed -i "s|USRVOL_PART_PLACEHOLDER|$USRVOL_PART|g" /mnt/configure_system.sh
+  sed -i "s/HOSTNAME_PLACEHOLDER/${HOSTNAME}/g" /mnt/configure_system.sh
+  sed -i "s/USERNAME_PLACEHOLDER/${USERNAME}/g" /mnt/configure_system.sh
+  sed -i "s/USER_PASSWORD_PLACEHOLDER/${USER_PASSWORD}/g" /mnt/configure_system.sh
+  sed -i "s/ROOT_PASSWORD_PLACEHOLDER/${ROOT_PASSWORD}/g" /mnt/configure_system.sh
+  sed -i "s|TIMEZONE_PLACEHOLDER|${TIMEZONE}|g" /mnt/configure_system.sh
+  sed -i "s|SYSVOL_PART_PLACEHOLDER|${SYSVOL_PART}|g" /mnt/configure_system.sh
+  sed -i "s|USRVOL_PART_PLACEHOLDER|${USRVOL_PART}|g" /mnt/configure_system.sh
   chmod +x /mnt/configure_system.sh
 }

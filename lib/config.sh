@@ -18,8 +18,12 @@ setup_interactive_config() {
   echo "Configuration complete:"
   echo "  Hostname: $HOSTNAME"
   echo "  Username: $USERNAME"
+  echo "  USER_PASSWORD: $USER_PASSWORD"
+  echo "  ROOT_PASSWORD: $ROOT_PASSWORD"
+  echo "  LUKS_PASSWORD: $LUKS_PASSWORD"
   echo " Timezone: $TIMEZONE"
   echo "  Target disk: $DISK"
+  sleep 8
 }
 
 # Hostname input with validation
@@ -27,11 +31,14 @@ get_hostname() {
   while true; do
     if command -v gum &> /dev/null; then
       HOSTNAME=$(gum input --placeholder "(e.g. archdesktop)" --prompt "Enter hostname: ")
+      HOSTNAME=$(echo "$HOSTNAME" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     elif command -v dialog &> /dev/null; then
       HOSTNAME=$(dialog --title "System Configuration" --inputbox "Enter hostname:" 8 40 3>&1 1>&2 2>&3)
+      HOSTNAME=$(echo "$HOSTNAME" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     else
       # shellcheck disable=SC2162
       read -p "Enter hostname: " HOSTNAME
+      HOSTNAME=$(echo "$HOSTNAME" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     fi
 
     if validate_hostname "$HOSTNAME"; then
@@ -51,11 +58,14 @@ get_username() {
   while true; do
     if command -v gum &> /dev/null; then
       USERNAME=$(gum input --placeholder "(e.g. archuser: lowercase, numbers, underscore, hyphen)" --prompt "Enter username: ")
+      USERNAME=$(echo "$USERNAME" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     elif command -v dialog &> /dev/null; then
       USERNAME=$(dialog --title "User Configuration" --inputbox "Enter username:" 8 40 3>&1 1>&2 2>&3)
+      USERNAME=$(echo "$USERNAME" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     else
       # shellcheck disable=SC2162
       read -p "Enter username: " USERNAME
+      USERNAME=$(echo "$USERNAME" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     fi
 
     if validate_username "$USERNAME"; then
@@ -75,12 +85,16 @@ get_user_password() {
   while true; do
     if command -v gum &> /dev/null; then
       USER_PASSWORD="$(gum input --password --placeholder "(minimum 6 characters)" --prompt "Enter user password: ")"
+      USER_PASSWORD=$(echo "$USER_PASSWORD" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
       # shellcheck disable=SC2155
       local confirm_password="$(gum input --password --prompt "Confirm user password: ")"
+      confirm_password=$(echo "$confirm_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
     elif command -v dialog &> /dev/null; then
       USER_PASSWORD="$(dialog --title "User Configuration" --passwordbox "Enter user password:" 8 40 3>&1 1>&2 2>&3)"
+      USER_PASSWORD=$(echo "$USER_PASSWORD" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
       # shellcheck disable=SC2155
       local confirm_password="$(dialog --title "User Configuration" --passwordbox "Confirm password:" 8 40 3>&1 1>&2 2>&3)"
+      confirm_password=$(echo "$confirm_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
     else
       # shellcheck disable=SC2162
       read -r -s -p "Enter user password: " USER_PASSWORD
@@ -90,7 +104,7 @@ get_user_password() {
       echo
     fi
 
-    if [[ $USER_PASSWORD == $confirm_password ]] && [[ ${#USER_PASSWORD} -ge 6 ]]; then
+    if [[ $USER_PASSWORD == "$confirm_password" ]] && [[ ${#USER_PASSWORD} -ge 6 ]]; then
       break
     else
       if command -v gum &> /dev/null; then
@@ -107,22 +121,26 @@ get_root_password() {
   while true; do
     if command -v gum &> /dev/null; then
       ROOT_PASSWORD="$(gum input --password --placeholder "(minimum 6 characters)" --prompt "Enter secure root password: ")"
+      ROOT_PASSWORD=$(echo "$ROOT_PASSWORD" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
       # shellcheck disable=SC2155
       local confirm_root_password="$(gum input --password --prompt "Confirm root password: ")"
+      confirm_root_password=$(echo "$confirm_root_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
     elif command -v dialog &> /dev/null; then
       ROOT_PASSWORD="$(dialog --title "User Configuration" --passwordbox "Enter secure root password:" 8 40 3>&1 1>&2 2>&3)"
+      ROOT_PASSWORD=$(echo "$ROOT_PASSWORD" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
       # shellcheck disable=SC2155
       local confirm_root_password="$(dialog --title "Root Configuration" --passwordbox "Confirm root password:" 8 40 3>&1 1>&2 2>&3)"
+      confirm_root_password=$(echo "$confirm_root_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
     else
       # shellcheck disable=SC2162
       read -s -p "Enter secure root password: " ROOT_PASSWORD
-      echo
+      ROOT_PASSWORD=$(echo "$ROOT_PASSWORD" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
       # shellcheck disable=SC2162
       read -s -p "Confirm root password: " confirm_root_password
-      echo
+      confirm_root_password=$(echo "$confirm_root_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
     fi
 
-    if [[ $ROOT_PASSWORD == $confirm_root_password ]] && [[ ${#ROOT_PASSWORD} -ge 6 ]]; then
+    if [[ $ROOT_PASSWORD == "$confirm_root_password" ]] && [[ ${#ROOT_PASSWORD} -ge 6 ]]; then
       break
     else
       if command -v gum &> /dev/null; then
@@ -139,17 +157,23 @@ get_luks_password() {
   while true; do
     if command -v gum &> /dev/null; then
       LUKS_PASSWORD=$(gum input --password --placeholder "(minimum 8 characters)" --prompt "Enter LUKS encryption password: ")
+      LUKS_PASSWORD=$(echo "$LUKS_PASSWORD" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
       # shellcheck disable=SC2155
       local confirm_password=$(gum input --password --prompt "Confirm LUKS encryption password: ")
+      confirm_password=$(echo "$confirm_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
     elif command -v dialog &> /dev/null; then
       LUKS_PASSWORD=$(dialog --title "Disk Encryption" --passwordbox "Enter LUKS encryption password:" 8 40 3>&1 1>&2 2>&3)
+      LUKS_PASSWORD=$(echo "$LUKS_PASSWORD" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
       # shellcheck disable=SC2155
       local confirm_password=$(dialog --title "Disk Encryption" --passwordbox "Confirm LUKS password:" 8 40 3>&1 1>&2 2>&3)
+      confirm_password=$(echo "$confirm_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
     else
       # shellcheck disable=SC2162
       read -s -p "Enter LUKS encryption password: " LUKS_PASSWORD
+      LUKS_PASSWORD=$(echo "$LUKS_PASSWORD" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
       # shellcheck disable=SC2162
       read -s -p "Confirm LUKS password: " confirm_password
+      confirm_password=$(echo "$confirm_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
     fi
 
     if [[ "$LUKS_PASSWORD" == "$confirm_password" ]] && [[ ${#LUKS_PASSWORD} -ge 8 ]]; then
@@ -187,6 +211,7 @@ get_timezone() {
     TIMEZONE=$(echo "$TIMEZONE" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
     if [[ "$TIMEZONE" == "Custom" ]]; then
       TIMEZONE=$(gum input --placeholder "(e.g. Europe/Stockholm, America/Los_Angeles, etc.)" --prompt "Enter timezone: ")
+      TIMEZONE=$(echo "$TIMEZONE" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
     fi
   elif command -v dialog &> /dev/null; then
     local dialog_options=()
@@ -203,11 +228,14 @@ get_timezone() {
     # shellcheck disable=SC2181
     if [[ $? -eq 0 ]]; then
       TIMEZONE="${timezones[$((selection-1))]}"
+      TIMEZONE=$(echo "$TIMEZONE" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
       if [[ "$TIMEZONE" == "Custom" ]]; then
           TIMEZONE=$(dialog --title "Custom Timezone" --inputbox "Enter timezone:" 8 40 3>&1 1>&2 2>&3)
+          TIMEZONE=$(echo "$TIMEZONE" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
       fi
     else
       TIMEZONE="Europe/Stockholm"
+      TIMEZONE=$(echo "$TIMEZONE" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
     fi
   else
     echo "Available timezones:"
@@ -220,9 +248,11 @@ get_timezone() {
       read -r -p "Select timezone number (1-${#timezones[@]}): " selection
       if [[ "$selection" =~ ^[0-9]+$ ]] && [[ $selection -ge 1 ]] && [[ $selection -le ${#timezones[@]} ]]; then
         TIMEZONE="${timezones[$((selection-1))]}"
+        TIMEZONE=$(echo "$TIMEZONE" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
         if [[ "$TIMEZONE" == "Custom" ]]; then
           # shellcheck disable=SC2162
           read -r -p "Enter custom timezone: " TIMEZONE
+          TIMEZONE=$(echo "$TIMEZONE" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
         fi
         break
       else
@@ -235,6 +265,7 @@ get_timezone() {
   if [[ ! -f "/usr/share/zoneinfo/${TIMEZONE}" ]]; then
     echo "Timezone $TIMEZONE not found, defaulting to Europe/Stockholm"
     TIMEZONE="Europe/Stockholm"
+    TIMEZONE=$(echo "$TIMEZONE" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
   fi
 }
 

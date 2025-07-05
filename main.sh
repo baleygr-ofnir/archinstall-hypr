@@ -73,6 +73,7 @@ perform_installation() {
 }
 
 cleanup_and_finish() {
+  sleep 5
   echo "Installation complete!"
   echo "Unmounting filesystems..."
   umount -R /mnt 2>/dev/null || true
