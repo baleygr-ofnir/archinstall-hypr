@@ -26,7 +26,6 @@ setup_logging() {
 
     # Redirect all output through logging (but don't enable set -x yet)
     exec 4>&1 1>> >(log) 5>&2 2>&1 3>&4
-    set +x
 }
 
 # Enable command tracing (call this after interactive setup)
