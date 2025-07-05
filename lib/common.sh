@@ -18,8 +18,7 @@ setup_logging() {
 
     # Logging function
     log() {
-        while read
-        do
+        while IFS= read -r REPLY; do
             printf "%(%Y-%m-%d_%T)T %s\n" -1 "$REPLY" | tee -a "$outlog"
         done
     }
@@ -48,7 +47,7 @@ confirm() {
     if command -v gum &> /dev/null; then
         gum confirm "$1" >&3 2>&5 </dev/tty
     else
-        { read -p "$(echo -e "${YELLOW}" "$1" "${NC}") [y/N]: " -n 1 -r >&3 && echo >&3; } 2>/dev/null || { read -p "$(echo -e "${YELLOW}" "$1" "${NC}") [y/N]: " -n 1 -r && echo; }
+        { read -r -p "$(echo -e "${YELLOW}" "$1" "${NC}") [y/N]: " -n 1 -r >&3 && echo >&3; } 2>/dev/null || { read -r -p "$(echo -e "${YELLOW}" "$1" "${NC}") [y/N]: " -n 1 -r && echo; }
         [[ $REPLY =~ ^[Yy]$ ]]
     fi
 }
