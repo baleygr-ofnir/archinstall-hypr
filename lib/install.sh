@@ -78,7 +78,7 @@ create_chroot_script() {
   sleep 2
   sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm oh-my-zsh-git
   sudo -u USERNAME_PLACEHOLDER sudo cp /usr/share/oh-my-zsh/zshrc /home/USERNAME_PLACEHOLDER/.zshrc
-
+  cd
   # Set locale
   echo "Setting locale..."
   mv /etc/locale.gen /etc/locale.gen.bak
@@ -117,6 +117,7 @@ create_chroot_script() {
       echo $locale_entry >> /etc/locale.conf
     done
   fi
+  cd
   rm -rf /tmp/en_se
   # Configure vconsole keymap
   echo "KEYMAP=sv-latin1" > /etc/vconsole.conf
@@ -172,7 +173,6 @@ create_chroot_script() {
 
   # Configure crypttab for user volume
   echo "Configuring crypttab..."
-  #mv /etc/crypttab /etc/crypttab.bak
   echo "# <name>       <device>                         <password>    <options>" > /etc/crypttab
   echo "usrvol         UUID=$USRVOL_UUID                none          luks" >> /etc/crypttab
 
@@ -181,14 +181,16 @@ create_chroot_script() {
   btrfs filesystem mkswapfile --size 8g --uuid clear /.swapvol/swapfile
   swapon /.swapvol/swapfile
   echo "/.swapvol/swapfile none swap defaults 0 0" >> /etc/fstab
-  
+
   echo "Installing ML4W Hyprland..."
+  cd
   sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm ml4w-hyprland
   sleep 2
   sudo -u USERNAME_PLACEHOLDER ml4w-hyprland-setup
 
   # Configure Plymouth theme
   echo "Setting Monoarch Plymouth theme..."
+  cd
   sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm plymouth-theme-monoarch
   plymouth-set-default-theme -R monoarch
 
