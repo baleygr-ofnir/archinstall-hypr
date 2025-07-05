@@ -10,6 +10,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Global variables
 DISK=""
 HOSTNAME=""
+# shellcheck disable=SC2034
+LANDOMAIN=""
+# shellcheck disable=SC2034
+DOMAINSUFFIX=""
 USERNAME=""
 # shellcheck disable=SC2034
 USER_PASSWORD=""

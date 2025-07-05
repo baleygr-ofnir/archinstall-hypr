@@ -63,14 +63,19 @@ install_tui_tools() {
 # Hostname validation function
 validate_hostname() {
   local hostname="$1"
+  local landomain="$2"
+  local domainsuffix="$3"
 
   # Check length (1-63 characters)
   if [[ ${#hostname} -lt 1 || ${#hostname} -gt 63 ]]; then
     return 1
+  elif  [[ ${#landomain} -lt 1 || ${#landomain} -gt 63 ]]; then
+    return 1
   fi
   printf "Hostname: '%s'\n" "$hostname"
+  printf "Landomain+suffix: '%s'\n" "$landomain$domainsuffix"
   # Check format: letters, numbers, hyphens (no leading/trailing hyphens)
-  if [[ "$hostname" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$ ]]; then
+  if [[ "$hostname" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$ ]] && [[ "$landomain.$domainsuffix" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.${domainsuffix}$ ]]; then
     return 0
   else
     return 1

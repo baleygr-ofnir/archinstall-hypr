@@ -29,16 +29,24 @@ get_hostname() {
     if command -v gum &> /dev/null; then
       HOSTNAME=$(gum input --placeholder "(e.g. archdesktop)" --prompt "Enter hostname: ")
       HOSTNAME=$(echo "$HOSTNAME" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+      LANDOMAIN=$(gum input --placeholder "(e.g. archnet)" --prompt "Enter lan domain: ")
+      LANDOMAIN=$(echo "$LANDOMAIN" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+      DOMAINSUFFIX=$(gum input --placeholder "(e.g. lan, local, srv)" --prompt "Enter domain suffix: ")
+      DOMAINSUFFIX=$(echo "$DOMAINSUFFIX" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     elif command -v dialog &> /dev/null; then
       HOSTNAME=$(dialog --title "System Configuration" --inputbox "Enter hostname:" 8 40 3>&1 1>&2 2>&3)
       HOSTNAME=$(echo "$HOSTNAME" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+      LANDOMAIN=$(dialog --title "System Configuration" --inputbox "Enter hostname:" 8 40 3>&1 1>&2 2>&3)
+      LANDOMAIN=$(echo "$LANDOMAIN" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     else
       # shellcheck disable=SC2162
       read -p "Enter hostname: " HOSTNAME
       HOSTNAME=$(echo "$HOSTNAME" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+      read -p "Enter hostname: " HOSTNAME
+      LANDOMAIN=$(echo "$LANDOMAIN" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     fi
 
-    if validate_hostname "$HOSTNAME"; then
+    if validate_hostname "$HOSTNAME" "$LANDOMAIN" "$DOMAINSUFFIX"; then
       break
     else
       if command -v gum &> /dev/null; then
