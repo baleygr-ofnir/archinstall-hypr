@@ -25,7 +25,7 @@ setup_interactive_config() {
 get_hostname() {
     while true; do
         if command -v gum &> /dev/null; then
-            HOSTNAME=$(gum input --placeholder "Enter hostname (e.g., archdesktop)" --prompt "Hostname: " >&3 2>&5)
+            HOSTNAME=$(gum input --placeholder "Enter hostname (e.g., archdesktop)" --prompt "Hostname: ")
         elif command -v dialog &> /dev/null; then
             HOSTNAME=$(dialog --title "System Configuration" --inputbox "Enter hostname:" 8 40 3>&1 1>&2 2>&3)
         else
@@ -37,7 +37,7 @@ get_hostname() {
             break
         else
             if command -v gum &> /dev/null; then
-                gum style --foreground 196 "❌ Invalid hostname. Use only letters, numbers, and hyphens." >&3 2>&5 </dev/tty
+                gum style --foreground 196 "❌ Invalid hostname. Use only letters, numbers, and hyphens."
             else
                 echo "Invalid hostname. Use only letters, numbers, and hyphens."
             fi
@@ -49,7 +49,7 @@ get_hostname() {
 get_username() {
     while true; do
         if command -v gum &> /dev/null; then
-            USERNAME=$(gum input --placeholder "Enter username" --prompt "Username: " >&3 2>&5 </dev/tty)
+            USERNAME=$(gum input --placeholder "Enter username" --prompt "Username: ")
         elif command -v dialog &> /dev/null; then
             USERNAME=$(dialog --title "User Configuration" --inputbox "Enter username:" 8 40 3>&1 1>&2 2>&3)
         else
@@ -61,7 +61,7 @@ get_username() {
             break
         else
             if command -v gum &> /dev/null; then
-                gum style --foreground 196 "❌ Invalid username. Use lowercase letters, numbers, underscore, hyphen." >&3 2>&5 </dev/tty
+                gum style --foreground 196 "❌ Invalid username. Use lowercase letters, numbers, underscore, hyphen."
             else
                 echo "Invalid username. Use lowercase letters, numbers, underscore, hyphen."
             fi
@@ -74,9 +74,9 @@ get_user_password() {
 
     while true; do
         if command -v gum &> /dev/null; then
-            USER_PASSWORD=$(gum input --password --placeholder "Enter user password" >&3 2>&5 </dev/tty)
+            USER_PASSWORD=$(gum input --password --placeholder "Enter user password")
             # shellcheck disable=SC2155
-            local confirm_password=$(gum input --password --placeholder "Confirm password" >&3 2>&5 </dev/tty)
+            local confirm_password=$(gum input --password --placeholder "Confirm password")
         elif command -v dialog &> /dev/null; then
             USER_PASSWORD=$(dialog --title "User Configuration" --passwordbox "Enter user password:" 8 40 3>&1 1>&2 2>&3)
             # shellcheck disable=SC2155
@@ -94,7 +94,7 @@ get_user_password() {
             break
         else
             if command -v gum &> /dev/null; then
-                gum style --foreground 196 "❌ Passwords don't match or too short (min 6 chars)." >&3 2>&5 </dev/tty
+                gum style --foreground 196 "❌ Passwords don't match or too short (min 6 chars)."
             else
                 echo "Passwords don't match or too short (minimum 6 characters)."
             fi
@@ -106,9 +106,9 @@ get_user_password() {
 get_luks_password() {
     while true; do
         if command -v gum &> /dev/null; then
-            LUKS_PASSWORD=$(gum input --password --placeholder "Enter LUKS encryption password" >&3 2>&5 </dev/tty)
+            LUKS_PASSWORD=$(gum input --password --placeholder "Enter LUKS encryption password")
             # shellcheck disable=SC2155
-            local confirm_password=$(gum input --password --placeholder "Confirm LUKS password" >&3 2>&5 </dev/tty)
+            local confirm_password=$(gum input --password --placeholder "Confirm LUKS password")
         elif command -v dialog &> /dev/null; then
             LUKS_PASSWORD=$(dialog --title "Disk Encryption" --passwordbox "Enter LUKS encryption password:" 8 40 3>&1 1>&2 2>&3)
             # shellcheck disable=SC2155
@@ -124,7 +124,7 @@ get_luks_password() {
             break
         else
             if command -v gum &> /dev/null; then
-                gum style --foreground 196 "❌ Passwords don't match or too short (min 8 chars)." >&3 2>&5 </dev/tty
+                gum style --foreground 196 "❌ Passwords don't match or too short (min 8 chars)."
             else
                 echo "Passwords don't match or too short (minimum 8 characters)."
             fi
@@ -152,7 +152,7 @@ get_timezone() {
     if command -v gum &> /dev/null; then
         TIMEZONE=$(printf '%s\n' "${timezones[@]}" | gum choose --prompt "Select timezone: ")
         if [[ "$TIMEZONE" == "Custom" ]]; then
-            TIMEZONE=$(gum input --placeholder "Enter timezone (e.g., Europe/Stockholm)" >&3 2>&5 </dev/tty)
+            TIMEZONE=$(gum input --placeholder "Enter timezone (e.g., Europe/Stockholm)")
         fi
     elif command -v dialog &> /dev/null; then
         local dialog_options=()

@@ -45,7 +45,7 @@ move_log() {
 # Confirmation prompt
 confirm() {
     if command -v gum &> /dev/null; then
-        gum confirm "$1" >&3 2>&5 </dev/tty
+        gum confirm "$1"
     else
         { read -r -p "$(echo -e "${YELLOW}" "$1" "${NC}") [y/N]: " -n 1 -r >&3 && echo >&3; } 2>/dev/null || { read -r -p "$(echo -e "${YELLOW}" "$1" "${NC}") [y/N]: " -n 1 -r && echo; }
         [[ $REPLY =~ ^[Yy]$ ]]
