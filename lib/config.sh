@@ -27,7 +27,7 @@ get_hostname() {
         if command -v gum &> /dev/null; then
             HOSTNAME=$(gum input --placeholder "Enter hostname (e.g., archdesktop)" --prompt "Hostname: " >&3 2>&5 </dev/tty)
         elif command -v dialog &> /dev/null; then
-            HOSTNAME=$(dialog --title "System Configuration" --inputbox "Enter hostname:" 8 40 >&3 2>&5 </dev/tty)
+            HOSTNAME=$(dialog --title "System Configuration" --inputbox "Enter hostname:" 8 40 3>&1 1>&2 2>&3)
         else
             # shellcheck disable=SC2162
             read -p "Enter hostname: " HOSTNAME
@@ -51,7 +51,7 @@ get_username() {
         if command -v gum &> /dev/null; then
             USERNAME=$(gum input --placeholder "Enter username" --prompt "Username: " >&3 2>&5 </dev/tty)
         elif command -v dialog &> /dev/null; then
-            USERNAME=$(dialog --title "User Configuration" --inputbox "Enter username:" 8 40  >&3 2>&5 </dev/tty)
+            USERNAME=$(dialog --title "User Configuration" --inputbox "Enter username:" 8 40 3>&1 1>&2 2>&3)
         else
             # shellcheck disable=SC2162
             read -p "Enter username: " USERNAME
@@ -78,9 +78,9 @@ get_user_password() {
             # shellcheck disable=SC2155
             local confirm_password=$(gum input --password --placeholder "Confirm password" >&3 2>&5 </dev/tty)
         elif command -v dialog &> /dev/null; then
-            USER_PASSWORD=$(dialog --title "User Configuration" --passwordbox "Enter user password:" 8 40  >&3 2>&5 </dev/tty)
+            USER_PASSWORD=$(dialog --title "User Configuration" --passwordbox "Enter user password:" 8 40 3>&1 1>&2 2>&3)
             # shellcheck disable=SC2155
-            local confirm_password=$(dialog --title "User Configuration" --passwordbox "Confirm password:" 8 40  >&3 2>&5 </dev/tty)
+            local confirm_password=$(dialog --title "User Configuration" --passwordbox "Confirm password:" 8 40 3>&1 1>&2 2>&3)
         else
             # shellcheck disable=SC2162
             read -s -p "Enter user password: " USER_PASSWORD
@@ -110,9 +110,9 @@ get_luks_password() {
             # shellcheck disable=SC2155
             local confirm_password=$(gum input --password --placeholder "Confirm LUKS password" >&3 2>&5 </dev/tty)
         elif command -v dialog &> /dev/null; then
-            LUKS_PASSWORD=$(dialog --title "Disk Encryption" --passwordbox "Enter LUKS encryption password:" 8 40 >&3 2>&5 </dev/tty)
+            LUKS_PASSWORD=$(dialog --title "Disk Encryption" --passwordbox "Enter LUKS encryption password:" 8 40 3>&1 1>&2 2>&3)
             # shellcheck disable=SC2155
-            local confirm_password=$(dialog --title "Disk Encryption" --passwordbox "Confirm LUKS password:" 8 40 >&3 2>&5 </dev/tty)
+            local confirm_password=$(dialog --title "Disk Encryption" --passwordbox "Confirm LUKS password:" 8 40 3>&1 1>&2 2>&3)
         else
             # shellcheck disable=SC2162
             read -s -p "Enter LUKS encryption password: " LUKS_PASSWORD
@@ -150,7 +150,7 @@ get_timezone() {
     )
 
     if command -v gum &> /dev/null; then
-        TIMEZONE=$(printf '%s\n' "${timezones[@]}" | gum choose --prompt "Select timezone: " >&3 2>&5 </dev/tty)
+        TIMEZONE=$(printf '%s\n' "${timezones[@]}" | gum choose --prompt "Select timezone: ")
         if [[ "$TIMEZONE" == "Custom" ]]; then
             TIMEZONE=$(gum input --placeholder "Enter timezone (e.g., Europe/Stockholm)" >&3 2>&5 </dev/tty)
         fi
@@ -164,13 +164,13 @@ get_timezone() {
         local selection=$(dialog --title "Timezone Selection" \
             --menu "Select timezone:" 15 50 10 \
             "${dialog_options[@]}" \
-            >&3 2>&5 </dev/tty)
+            3>&1 1>&2 2>&3)
 
         # shellcheck disable=SC2181
         if [[ $? -eq 0 ]]; then
             TIMEZONE="${timezones[$((selection-1))]}"
             if [[ "$TIMEZONE" == "Custom" ]]; then
-                TIMEZONE=$(dialog --title "Custom Timezone" --inputbox "Enter timezone:" 8 40 >&3 2>&5 </dev/tty)
+                TIMEZONE=$(dialog --title "Custom Timezone" --inputbox "Enter timezone:" 8 40 3>&1 1>&2 2>&3)
             fi
         else
             TIMEZONE="Europe/London"
@@ -237,7 +237,7 @@ select_target_disk() {
             selection+="${disk_list[$i]} (${disk_display[$((i*2+1))]})\n"
         done
 
-        DISK=$(echo -e "$selection" | fzf --prompt="Select installation disk: " --height 40% >&3 2>&5 </dev/tty | awk '{print $1}')
+        DISK=$(echo -e "$selection" | fzf --prompt="Select installation disk: " --height 40% | awk '{print $1}')
 
     # Dialog fallback
     elif command -v dialog &> /dev/null; then
@@ -245,7 +245,7 @@ select_target_disk() {
         local selected=$(dialog --title "Disk Selection" \
             --menu "Select installation disk:" 15 70 8 \
             "${disk_display[@]}" \
-            >&3 2>&5 </dev/tty)
+            3>&1 1>&2 2>&3)
 
         # shellcheck disable=SC2181
         if [[ $? -eq 0 ]]; then

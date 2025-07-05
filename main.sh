@@ -31,10 +31,10 @@ source "${SCRIPT_DIR}/lib/install.sh"
 # Main installation flow
 main() {
     check_requirements
-    #setup_logging
+    setup_logging
     setup_interactive_config
     confirm_installation
-    #enable_command_tracing
+    enable_command_tracing
     perform_installation
     cleanup_and_finish
 }

@@ -26,6 +26,7 @@ setup_logging() {
 
     # Redirect all output through logging (but don't enable set -x yet)
     exec 4>&1 1>> >(log) 5>&2 2>&1 3>&4
+    set +x
 }
 
 # Enable command tracing (call this after interactive setup)
@@ -45,7 +46,7 @@ move_log() {
 # Confirmation prompt
 confirm() {
     if command -v gum &> /dev/null; then
-        gum confirm "$1"
+        gum confirm "$1" >&3 2>&5 </dev/tty
     else
         { read -p "$(echo -e "${YELLOW}" "$1" "${NC}") [y/N]: " -n 1 -r >&3 && echo >&3; } 2>/dev/null || { read -p "$(echo -e "${YELLOW}" "$1" "${NC}") [y/N]: " -n 1 -r && echo; }
         [[ $REPLY =~ ^[Yy]$ ]]
