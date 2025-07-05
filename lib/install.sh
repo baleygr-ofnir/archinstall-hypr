@@ -37,10 +37,6 @@ create_chroot_script() {
   ln -sf /usr/share/zoneinfo/TIMEZONE_PLACEHOLDER /etc/localtime
   hwclock --systohc
 
-  # Configure vconsole keymap
-  mv /etc/vconsole.conf /etc/vconsole.conf.bak
-  echo "KEYMAP=sv-latin1" > /etc/vconsole.conf
-
   # Sudo config
   sed -i -e '/^#\? %wheel.*) ALL.*/s/^# //' /etc/sudoers
   # Prereqs for arch-chroot env
@@ -123,6 +119,9 @@ create_chroot_script() {
     done
   fi
   rm -rf /tmp/en_se
+  # Configure vconsole keymap
+  mv /etc/vconsole.conf /etc/vconsole.conf.bak
+  echo "KEYMAP=sv-latin1" > /etc/vconsole.conf
   sleep 2
 
   # Set hostname
