@@ -70,7 +70,7 @@ validate_hostname() {
     fi
 
     # Check format: letters, numbers, hyphens (no leading/trailing hyphens)
-    if [[ "$hostname" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$ ]]; then
+    if [[ ${#hostname} =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$ ]]; then
         return 0
     else
         return 1
