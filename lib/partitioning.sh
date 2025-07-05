@@ -32,9 +32,6 @@ setup_partitions() {
     SYSVOL_PART=$(get_partition_name "$DISK" 2)
     USRVOL_PART=$(get_partition_name "$DISK" 3)
 
-    # Wipe partition signatures
-    wipefs -af "$EFI_PART" "$SYSVOL_PART" "$USRVOL_PART"
-
     echo "Partitions created:"
     echo "  EFI: $EFI_PART"
     echo "  SYSVOL: $SYSVOL_PART"
@@ -54,7 +51,7 @@ create_filesystems() {
     echo "Creating filesystems..."
 
     # Format EFI partition
-    mkfs.fat -F32 "$EFI_PART"
+    mkfs.fat -F 32 "$EFI_PART"
 
     # Create btrfs filesystems
     mkfs.btrfs -L sysvol -f "$SYSVOL_PART"

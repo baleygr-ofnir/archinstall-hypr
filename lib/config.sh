@@ -49,7 +49,7 @@ get_hostname() {
 get_username() {
     while true; do
         if command -v gum &> /dev/null; then
-            USERNAME=$(gum input --placeholder "(e.g. archuser, lowercase, numbers, underscore, hyphen)" --prompt "Enter username: ")
+            USERNAME=$(gum input --placeholder "(e.g. archuser: lowercase, numbers, underscore, hyphen)" --prompt "Enter username: ")
         elif command -v dialog &> /dev/null; then
             USERNAME=$(dialog --title "User Configuration" --inputbox "Enter username:" 8 40 3>&1 1>&2 2>&3)
         else
@@ -150,7 +150,7 @@ get_timezone() {
     )
 
     if command -v gum &> /dev/null; then
-        TIMEZONE=$(printf '%s\n' "${timezones[@]}" | gum choose "Select timezone: ")
+        TIMEZONE=$(printf '%s\n' "${timezones[@]}" | gum choose --no-limit --header "Select timezone: ")
         if [[ "$TIMEZONE" == "Custom" ]]; then
             TIMEZONE=$(gum input --placeholder "(e.g., Europe/Stockholm)" --prompt "Enter timezone: ")
         fi
@@ -200,7 +200,7 @@ get_timezone() {
     # Validate timezone exists
     if [[ ! -f "/usr/share/zoneinfo/$TIMEZONE" ]]; then
         echo "Timezone $TIMEZONE not found, defaulting to Europe/London"
-        TIMEZONE="Europe/London"
+        TIMEZONE="Europe/Stockholm"
     fi
 }
 

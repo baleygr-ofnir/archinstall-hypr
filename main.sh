@@ -17,8 +17,8 @@ USER_PASSWORD=""
 LUKS_PASSWORD=""
 # shellcheck disable=SC2034
 TIMEZONE=""
-EFI_SIZE="1024M"
-SYSVOL_SIZE="66560M"
+EFI_SIZE="1G"
+SYSVOL_SIZE="65G"
 # shellcheck disable=SC2034
 BTRFS_OPTS="defaults,noatime,compress=zstd:3,discard=async,space_cache=v2"
 
