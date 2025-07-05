@@ -88,7 +88,7 @@ mount_filesystems() {
     mount -o $BTRFS_OPTS,subvol=@ "$SYSVOL_PART" /mnt
 
     # Create mount points
-    mkdir -p /mnt/{boot,var,var/{cache,log,tmp},tmp,home,opt,root,.swapvol}
+    mkdir -p /mnt/{boot,var,var/{cache,log,tmp},tmp,home,opt,root,.snapshots,.swapvol}
 
     # Mount system subvolumes
     mount -o $BTRFS_OPTS,subvol=@var "$SYSVOL_PART" /mnt/var
