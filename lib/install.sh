@@ -219,30 +219,36 @@ create_chroot_script() {
   USRVOL_UUID=$(blkid -s UUID -o value USRVOL_PART_PLACEHOLDER)
 
   # Create boot entry
-  mv /boot/loader/entries/arch.conf /boot/loader/entries/arch.conf.bak
   for loader_conf in \
     "title   Arch Linux (Zen)" \
     "linux   /vmlinuz-linux-zen" \
     "initrd  /initramfs-linux-zen.img" \
     "options root=UUID=$ROOT_UUID rootflags=subvol=@ rw quiet splash loglevel=3 rd.udev.log_priority=3 vt.global_cursor_default=0 preempt=full threadirqs idle=halt processor.max_cstate=1 nohz=on nohz_full=1-15 amd_pstate=active rcu_nocbs=1-15 udev.children_max=2 usbcore.autosuspend=-1 pcie_aspm=performance nvme_core.poll_queues=1 nowatchdog"
   do
-    echo $loader_conf >> /boot/loader/entries/arch.conf
+    if [[ "$loader_conf" =~ "\(Zen\)" ]]; then
+      echo $loader_conf > /boot/loader/entries/arch.conf
+    else
+      echo $loader_conf >> /boot/loader/entries/arch.conf
+    fi
   done
 
   # Configure systemd-boot
-  mv /boot/loader/loader.conf /boot/loader/loader.conf.bak
   for default_conf in \
     "default arch.conf" \
     "timeout 5" \
     "console-mode max" \
     "editor no"
   do
-    echo $default_conf >> /boot/loader/loader.conf
+    if [[ "$default_conf" =~ "arch.conf" ]]; then
+      echo $default_conf > /boot/loader/loader.conf
+    else
+      echo $default_conf >> /boot/loader/loader.conf
+    fi
   done
 
   # Configure crypttab for user volume
   echo "Configuring crypttab..."
-  mv /etc/crypttab /etc/crypttab.bak
+  #mv /etc/crypttab /etc/crypttab.bak
   echo "# <name>       <device>                         <password>    <options>" > /etc/crypttab
   echo "usrvol         UUID=$USRVOL_UUID                none          luks" >> /etc/crypttab
 
