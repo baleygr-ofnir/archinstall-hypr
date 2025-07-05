@@ -4,17 +4,15 @@
 # Install base system
 install_base_system() {
   echo "Installing base system..."
-  pacstrap /mnt base linux-zen linux-zen-headers linux-firmware btrfs-progs base-devel git sudo realtime-privileges zsh
-
-  # Pacman configuration
-  echo "Enabling extra and multilib repositories"
-  sed -i \
-    -e '/^#\?\[extra\]/s/^#//' \
-    -e '/^\[extra\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
-    -e '/^#\?\[multilib\]/s/^#//' \
-    -e '/^\[multilib\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
-    /mnt/etc/pacman.conf
-
+  pacstrap /mnt base \
+    linux-zen \
+    linux-zen-headers \
+    linux-firmware \
+    btrfs-progs \
+    base-devel \
+    sudo
+  # Sudo config
+  sed -i -e '/^#\? %wheel.*) ALL.*/s/^# //' /mnt/etc/sudoers
   # Mkinitcpio configuration
   echo "Configuring mkinitcpio..."
   sed -i \
@@ -24,10 +22,26 @@ install_base_system() {
     -e '/^#\?COMPRESSION_OPTIONS=.*/s/^#//' \
     -e '/^COMPRESSION_OPTIONS=/s/()/(-15)/' \
     /mnt/etc/mkinitcpio.conf
-
-  # Sudo config
-  sed -i -e '/^#\? %wheel.*) ALL.*/s/^# //' /mnt/etc/sudoers
-
+  # Prereqs for arch-chroot env
+  echo "Enabling extra and multilib repositories"
+  sed -i \
+    -e '/^#\?\[extra\]/s/^#//' \
+    -e '/^\[extra\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
+    -e '/^#\?\[multilib\]/s/^#//' \
+    -e '/^\[multilib\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
+    /mnt/etc/pacman.conf
+  arch-chroot /mnt pacman -Syu --noconfirm \
+    efibootmgr \
+    firewalld \
+    networkmanager \
+    nmap \
+    neovim \
+    plymouth \
+    pacman-contrib \
+    git \
+    realtime-privileges \
+    rustup \
+    zsh
   # Generate fstab
   genfstab -U /mnt >> /mnt/etc/fstab
 }
@@ -35,7 +49,6 @@ install_base_system() {
 # Configure the installed system
 configure_system() {
   echo "Configuring system..."
-
   create_chroot_script
   arch-chroot /mnt /configure_system.sh
   rm /mnt/configure_system.sh
@@ -46,19 +59,13 @@ create_chroot_script() {
   cat > /mnt/configure_system.sh << 'CHROOT_EOF'
     #!/bin/bash
     # Configuration script for chroot environment
-
     set -e
-
     # Set timezone
     echo "Setting timezone..."
     ln -sf /usr/share/zoneinfo/TIMEZONE_PLACEHOLDER /etc/localtime
     hwclock --systohc
 
-    # Set locale
-    echo "Setting locale..."
-
-    # Ensure git is available
-    pacman -Syu --noconfirm rustup
+    # rust install
     rustup default stable
     rustup install stable
     rustup update
@@ -76,23 +83,28 @@ create_chroot_script() {
     root:$(mkpasswd -m sha-512 -s <<< "ROOT_PASSWORD_PLACEHOLDER")
     EOF
 
-    # Install paru from AUR
+    # Install paru - rust-based AUR helper
     git clone https://aur.archlinux.org/paru.git /tmp/paru
     chown -R USERNAME_PLACEHOLDER /tmp/paru
     cd /tmp/paru
     sudo -u USERNAME_PLACEHOLDER makepkg -s
     pacman -U --noconfirm paru-*.pkg.tar.zst
     sleep 2
-    paru -S --noconfirm oh-my-zsh-git
-
+    sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm oh-my-zsh-git
+    # Set locale
+    echo "Setting locale..."
     if $(sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm en_se); then
       echo "Installed en_SE locale from AUR"
       sleep 2
+      echo "Enabling it in system"
+      echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
       echo "en_SE.UTF-8 UTF-8" >> /etc/locale.gen
       locale-gen
+      echo "Configuring as system language"
       echo "LANG=en_SE.UTF-8" > /etc/locale.conf
     else
       echo "Failed to build/install en_SE, using fallback configuration"
+      echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
       echo "en_GB.UTF-8 UTF-8" >> /etc/locale.gen
       echo "sv_SE.UTF-8 UTF-8" >> /etc/locale.gen
       locale-gen
@@ -105,32 +117,18 @@ create_chroot_script() {
       LC_MEASUREMENT=sv_SE.UTF-8
       EOF
     fi
-
-    sleep 5
-
-    # Cleanup
-    paru -Scc --noconfirm
-    rm -rf /tmp/paru
-
+    sleep 2
     # Set hostname
     echo "HOSTNAME_PLACEHOLDER" > /etc/hostname
-
     # Configure hosts file
     cat > /etc/hosts << EOF
     127.0.0.1   localhost
     ::1         localhost
-    127.0.1.1   HOSTNAME_PLACEHOLDER.localdomain HOSTNAME_PLACEHOLDER
+    127.0.1.1   HOSTNAME_PLACEHOLDER.mimirsbrunnr.lan HOSTNAME_PLACEHOLDER
     EOF
-
-    # Install essential packages
+    # Install essential gaming prereq packages
     echo "Installing essential packages..."
-    pacman -Syu --needed --noconfirm \
-      efibootmgr \
-      networkmanager \
-      nmap \
-      neovim \
-      plymouth \
-      pacman-contrib \
+    pacman -Syu --needed --noconfirm
       tmux \
       obs-studio \
       flatpak \
@@ -138,11 +136,72 @@ create_chroot_script() {
       lutris \
       wine \
       winetricks \
+      wine-mono \
+      wine-gecko \
       gamemode \
       lib32-gamemode \
+      mesa \
+      lib32-mesa \
+      xf86-video-amdgpu \
       vulkan-tools \
       lib32-vulkan-icd-loader \
-      vulkan-icd-loader
+      vulkan-icd-loader \
+      vulkan-radeon \
+      lib32-vulkan-radeon \
+      ttf-liberation \
+      ttf-liberation-mono-nerd \
+      libvirt \
+      libvirt-dbus \
+      libvirt-glib \
+      libvirt-python \
+      libvirt-storage-gluster \
+      libvirt-storage-iscsi-direct \
+      qemu-audio-alsa \
+      qemu-audio-dbus \
+      qemu-audio-pipewire \
+      qemu-audio-sdl \
+      qemu-audio-spice \
+      qemu-base \
+      qemu-block-curl \
+      qemu-block-iscsi \
+      qemu-block-nfs \
+      qemu-block-ssh \
+      qemu-chardev-baum \
+      qemu-chardev-spice \
+      qemu-common \
+      qemu-desktop \
+      qemu-docs \
+      qemu-emulators-full \
+      qemu-guest-agent \
+      qemu-hw-display-qxl \
+      qemu-hw-display-virtio-gpu \
+      qemu-hw-display-virtio-gpu-gl \
+      qemu-hw-display-virtio-gpu-pci \
+      qemu-hw-display-virtio-gpu-pci-gl \
+      qemu-hw-uefi-vars \
+      qemu-hw-usb-host \
+      qemu-hw-usb-redirect \
+      qemu-img \
+      qemu-system-x86 \
+      qemu-system-x86-firmware \
+      qemu-tools \
+      qemu-ui-egl-headless \
+      qemu-ui-gtk \
+      qemu-ui-opengl \
+      qemu-ui-sdl \
+      qemu-ui-spice-app \
+      qemu-ui-spice-core \
+      qemu-user \
+      qemu-user-static \
+      qemu-user-static-binfmt \
+      virt-manager \
+      dnsmasq \
+      openbsd-netcat \
+      dmidecode
+    sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm \
+      jdk-temurin \
+      ttf-ms-win10-auto \
+      ttf-ms-win11-auto
 
     # Install and configure systemd-boot
     echo "Installing systemd-boot..."
@@ -176,12 +235,13 @@ create_chroot_script() {
     EOF
 
     # Configure Plymouth theme
+    echo "Setting Monoarch Plymouth theme..."
     sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm plymouth-theme-monoarch
     plymouth-set-default-theme -R monoarch
 
     # Enable NetworkManager
     systemctl enable NetworkManager
-
+    systemctl enable firewalld
     # Enable package cache cleanup
     echo "Enabling automatic package cache cleanup..."
     systemctl enable --now paccache.timer
@@ -196,7 +256,13 @@ create_chroot_script() {
     sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm ml4w-hyprland
     sleep 2
     sudo -u USERNAME_PLACEHOLDER ml4w-hyprland-setup
-
+    # Cleanup
+    echo "Cleaning up package cache..."
+    paru -Scc --noconfirm
+    rm -rf /tmp/paru
+    # Rebuild initramfs
+    mkinitcpio -P
+    # Post-installation ML4W configuration script
     setup_ml4w_post_install() {
       echo "Setting up ML4W post-installation script..."
 
@@ -329,12 +395,12 @@ create_chroot_script() {
       optimize_system() {
         echo "Applying gaming optimizations..."
         sudo tee /etc/sysctl.d/99-gaming.conf > /dev/null << 'SYSCTL_CONF_EOF'
+        vm.max_map_count = 2147483642
         vm.swappiness = 1
         vm.vfs_cache_pressure = 50
         net.core.rmem_default = 1048576
         net.core.rmem_max = 16777216
         SYSCTL_CONF_EOF
-        sudo systemctl enable docker
         systemctl --user enable gamemoded
       }
 

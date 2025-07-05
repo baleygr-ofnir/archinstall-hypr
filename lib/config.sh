@@ -77,9 +77,6 @@ get_user_password() {
       USER_PASSWORD=$(gum input --password --placeholder "(minimum 6 characters)" --prompt "Enter user password: ")
       # shellcheck disable=SC2155
       local confirm_password=$(gum input --password --prompt "Confirm user password: ")
-      ROOT_PASSWORD=$(gum input --password --placeholder "(minimum 6 characters)" --prompt "Enter secure root password: ")
-      # shellcheck disable=SC2155
-      local confirm_password=$(gum input --password --prompt "Confirm secure root password: ")
     elif command -v dialog &> /dev/null; then
       USER_PASSWORD=$(dialog --title "User Configuration" --passwordbox "Enter user password:" 8 40 3>&1 1>&2 2>&3)
       # shellcheck disable=SC2155
