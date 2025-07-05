@@ -44,7 +44,7 @@ sed -i -e '/^#\?\[extra\]/s/^#//' \
 pacman -Sy --noconfirm git sudo
 
 # User configuration
-status "Creating user USERNAME_PLACEHOLDER..."
+echo "Creating user USERNAME_PLACEHOLDER..."
 useradd -m -G realtime,storage,wheel -s /bin/bash USERNAME_PLACEHOLDER
 
 # Set user password

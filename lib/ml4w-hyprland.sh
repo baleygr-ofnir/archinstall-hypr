@@ -61,7 +61,7 @@ install_gaming_packages() {
 
     for package in "${GAMING_PACKAGES[@]}"; do
         echo "Installing $package..."
-        sudo pacman -S --needed --noconfirm "$package" || warn "Failed to install $package"
+        sudo pacman -S --needed --noconfirm "$package" || echo "Failed to install $package"
     done
 
     # AUR gaming packages
@@ -74,7 +74,7 @@ install_gaming_packages() {
 
     for package in "${AUR_GAMING_PACKAGES[@]}"; do
         echo "Installing AUR package: $package..."
-        paru -S --needed --noconfirm "$package" || warn "Failed to install $package"
+        paru -S --needed --noconfirm "$package" || echo "Failed to install $package"
     done
 }
 
@@ -381,9 +381,9 @@ configure_workstation() {
     for package in "${WORKSTATION_PACKAGES[@]}"; do
         echo "Installing workstation package: $package..."
         if [[ "$package" == *"-git" ]]; then
-            paru -S --needed --noconfirm "$package" || warn "Failed to install $package"
+            paru -S --needed --noconfirm "$package" || echo "Failed to install $package"
         else
-            sudo pacman -S --needed --noconfirm "$package" || warn "Failed to install $package"
+            sudo pacman -S --needed --noconfirm "$package" || echo "Failed to install $package"
         fi
     done
 
