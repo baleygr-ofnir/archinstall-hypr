@@ -5,7 +5,7 @@
 set -e
 
 # Script directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && $PWD)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Global variables
 DISK=""
@@ -13,12 +13,14 @@ HOSTNAME=""
 USERNAME=""
 # shellcheck disable=SC2034
 USER_PASSWORD=""
+# shellcheck disable=SC2034
 ROOT_PASSWORD=""
 # shellcheck disable=SC2034
 LUKS_PASSWORD=""
 # shellcheck disable=SC2034
 TIMEZONE=""
 EFI_SIZE="1G"
+# shellcheck disable=SC2034
 SYSVOL_SIZE="65G"
 # shellcheck disable=SC2034
 BTRFS_OPTS="defaults,noatime,compress=zstd:3,discard=async,space_cache=v2"

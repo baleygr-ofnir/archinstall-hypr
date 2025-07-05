@@ -31,7 +31,6 @@ install_base_system() {
     pacman-contrib \
     git \
     realtime-privileges \
-    rustup \
     zsh
   # Generate fstab
   genfstab -U /mnt >> /mnt/etc/fstab
@@ -50,22 +49,23 @@ create_chroot_script() {
 cat > /mnt/configure_system.sh << 'CHROOT_EOF'
 #!/bin/bash
 # Configuration script for chroot environment
-set -e
+#set -e
+
 # Set timezone
 echo "Setting timezone..."
 ln -sf /usr/share/zoneinfo/TIMEZONE_PLACEHOLDER /etc/localtime
 hwclock --systohc
 
 # rust install
-rustup default stable
-rustup install stable
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
 sleep 2
 
 # User configuration
 echo "Creating user USERNAME_PLACEHOLDER..."
-useradd -m -G realtime,storage,wheel -s /bin/zsh USERNAME_PLACEHOLDER
+useradd -m -G realtime,storage,wheel -s /bin/zsh "USERNAME_PLACEHOLDER"
 chpasswd --encrypted << 'USER_EOF'
-USERNAME_PLACEHOLDER:$(mkpasswd -m sha-512 -s <<< "USER_PASSWORD_PLACEHOLDER")
+"USERNAME_PLACEHOLDER":$(mkpasswd -m sha-512 -s <<< "USER_PASSWORD_PLACEHOLDER")
 USER_EOF
 # Root configuration
 chpasswd --encrypted << 'ROOT_EOF'
@@ -74,16 +74,16 @@ ROOT_EOF
 
 # Install paru - rust-based AUR helper
 git clone https://aur.archlinux.org/paru.git /tmp/paru
-chown -R USERNAME_PLACEHOLDER /tmp/paru
+chown -R "USERNAME_PLACEHOLDER" /tmp/paru
 cd /tmp/paru
-sudo -u USERNAME_PLACEHOLDER makepkg -s
-pacman -U --noconfirm paru-*.pkg.tar.zst
+sudo -u "USERNAME_PLACEHOLDER" makepkg -si --noconfirm
+#pacman -U --noconfirm paru-*.pkg.tar.zst
 sleep 2
-sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm oh-my-zsh-git
+sudo -u "USERNAME_PLACEHOLDER" paru -S --noconfirm oh-my-zsh-git
 
 # Set locale
 echo "Setting locale..."
-if $(sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm en_se); then
+if $(sudo -u "USERNAME_PLACEHOLDER" paru -S --noconfirm en_se); then
   echo "Installed en_SE locale from AUR"
   sleep 2
   echo "Enabling it in system"
@@ -112,15 +112,6 @@ KEYMAP=sv-latin1
 EOF
 sleep 2
 
-# Set hostname
-echo "HOSTNAME_PLACEHOLDER" > /etc/hostname
-# Configure hosts file
-cat > /etc/hosts << 'HOSTS_EOF'
-127.0.0.1   localhost
-::1         localhost
-127.0.1.1   HOSTNAME_PLACEHOLDER.mimirsbrunnr.lan HOSTNAME_PLACEHOLDER
-HOSTS_EOF
-
 # Mkinitcpio configuration
 sed -i -f - /etc/mkinitcpio.conf << 'HOOKS_EOF'
 s/^HOOKS=.*microcode.*kms.*consolefont.*/#&/
@@ -132,6 +123,16 @@ HOOKS=(base systemd autodetect microcode plymouth modconf kms keyboard keymap sd
 /^#\?COMPRESSION_OPTIONS=.*/s/^#//
 /^COMPRESSION_OPTIONS=/s/()/(-15)/
 HOOKS_EOF
+
+# Set hostname
+echo "HOSTNAME_PLACEHOLDER" > /etc/hostname
+# Configure hosts file
+cat > /etc/hosts << 'HOSTS_EOF'
+127.0.0.1   localhost
+::1         localhost
+127.0.1.1   HOSTNAME_PLACEHOLDER.mimirsbrunnr.lan HOSTNAME_PLACEHOLDER
+HOSTS_EOF
+
 # Install essential gaming prereq packages
 echo "Installing essential packages..."
 pacman -Syu --needed --noconfirm \
@@ -276,7 +277,7 @@ CHROOT_EOF
   sed -i "s/HOSTNAME_PLACEHOLDER/$HOSTNAME/g" /mnt/configure_system.sh
   sed -i "s/USERNAME_PLACEHOLDER/$USERNAME/g" /mnt/configure_system.sh
   sed -i "s/USER_PASSWORD_PLACEHOLDER/$USER_PASSWORD/g" /mnt/configure_system.sh
-  sed -i "s/ROOT_PASSWORD_PLACEHOLDER/$ROOT_PASSWORD/g" /mnt/configure_system.sh
+  sed -i "s/ROOT_PASSWORD_PLACEHOLDER/$ROOTY_PASSWORD/g" /mnt/configure_system.sh
   sed -i "s|TIMEZONE_PLACEHOLDER|$TIMEZONE|g" /mnt/configure_system.sh
   sed -i "s|SYSVOL_PART_PLACEHOLDER|$SYSVOL_PART|g" /mnt/configure_system.sh
   sed -i "s|USRVOL_PART_PLACEHOLDER|$USRVOL_PART|g" /mnt/configure_system.sh
