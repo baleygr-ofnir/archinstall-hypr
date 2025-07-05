@@ -27,11 +27,12 @@ source "${SCRIPT_DIR}/lib/common.sh"
 source "${SCRIPT_DIR}/lib/config.sh"
 source "${SCRIPT_DIR}/lib/partitioning.sh"
 source "${SCRIPT_DIR}/lib/install.sh"
+source "${SCRIPT_DIR}/lib/ml4w-hyprland.sh"
 
 # Main installation flow
 main() {
-    setup_logging
     check_requirements
+    setup_logging
     setup_interactive_config
     confirm_installation
     enable_command_tracing
@@ -41,21 +42,21 @@ main() {
 
 check_requirements() {
     if [[ $EUID -ne 0 ]]; then
-        error "This script must be run as root"
+        echo "This script must be run as root"
     fi
 
-    status "Updating system clock..."
+    echo "Updating system clock..."
     timedatectl set-ntp true
 }
 
 confirm_installation() {
-    status "Installation Summary:"
-    status "  Hostname: $HOSTNAME"
-    status "  Username: $USERNAME"
-    status "  Target disk: $DISK"
-    status "  EFI: ${EFI_SIZE}, System: ${SYSVOL_SIZE}, User: remaining (encrypted)"
+    echo "Installation Summary:"
+    echo "  Hostname: $HOSTNAME"
+    echo "  Username: $USERNAME"
+    echo "  Target disk: $DISK"
+    echo "  EFI: ${EFI_SIZE}, System: ${SYSVOL_SIZE}, User: remaining (encrypted)"
 
-    warn "This will DESTROY ALL DATA on $DISK"
+    echo "This will DESTROY ALL DATA on $DISK"
     confirm "Continue with installation?"
 }
 
@@ -70,12 +71,12 @@ perform_installation() {
 }
 
 cleanup_and_finish() {
-    status "Installation complete!"
-    status "Unmounting filesystems..."
+    echo "Installation complete!"
+    echo "Unmounting filesystems..."
     umount -R /mnt 2>/dev/null || true
 
-    status "You can now reboot into your new Arch Linux system!"
-    status "The encrypted partition will require your passphrase at boot."
+    echo "You can now reboot into your new Arch Linux system!"
+    echo "The encrypted partition will require your passphrase at boot."
 }
 
 # Run main function

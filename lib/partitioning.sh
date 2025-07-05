@@ -3,7 +3,7 @@
 
 # Partition setup
 setup_partitions() {
-    status "Partitioning disk $DISK..."
+    echo "Partitioning disk $DISK..."
 
     # Unmount any mounted filesystems
     umount -R /mnt 2>/dev/null || true
@@ -35,15 +35,15 @@ setup_partitions() {
     # Wipe partition signatures
     wipefs -af "$EFI_PART" "$SYSVOL_PART" "$USRVOL_PART"
 
-    status "Partitions created:"
-    status "  EFI: $EFI_PART"
-    status "  SYSVOL: $SYSVOL_PART"
-    status "  USRVOL: $USRVOL_PART"
+    echo "Partitions created:"
+    echo "  EFI: $EFI_PART"
+    echo "  SYSVOL: $SYSVOL_PART"
+    echo "  USRVOL: $USRVOL_PART"
 }
 
 # Setup LUKS encryption for user volume
 setup_encryption() {
-    status "Setting up LUKS encryption for user volume..."
+    echo "Setting up LUKS encryption for user volume..."
 
     echo "$LUKS_PASSWORD" | cryptsetup luksFormat --batch-mode "$USRVOL_PART"
     echo "$LUKS_PASSWORD" | cryptsetup open "$USRVOL_PART" usrvol
@@ -51,7 +51,7 @@ setup_encryption() {
 
 # Create btrfs filesystems
 create_filesystems() {
-    status "Creating filesystems..."
+    echo "Creating filesystems..."
 
     # Format EFI partition
     mkfs.fat -F32 "$EFI_PART"
@@ -82,7 +82,7 @@ create_filesystems() {
 
 # Mount all filesystems
 mount_filesystems() {
-    status "Mounting filesystems..."
+    echo "Mounting filesystems..."
 
     # Mount root subvolume
     mount -o "$BTRFS_OPTS",subvol=@ "$SYSVOL_PART" /mnt
@@ -106,6 +106,6 @@ mount_filesystems() {
     # Mount EFI partition
     mount "$EFI_PART" /mnt/boot
 
-    status "Filesystem layout:"
+    echo "Filesystem layout:"
     lsblk
 }

@@ -3,7 +3,7 @@
 
 # Install base system
 install_base_system() {
-    status "Installing base system..."
+    echo "Installing base system..."
     pacstrap /mnt base linux-zen linux-zen-headers linux-firmware btrfs-progs base-devel
 
     # Generate fstab
@@ -12,7 +12,7 @@ install_base_system() {
 
 # Configure the installed system
 configure_system() {
-    status "Configuring system..."
+    echo "Configuring system..."
 
     create_chroot_script
     arch-chroot /mnt /configure_system.sh
@@ -27,22 +27,13 @@ create_chroot_script() {
 
 set -e
 
-status() {
-    echo -e "\033[0;32m[$(date '+%H:%M:%S')] $1\033[0m"
-}
-
-error() {
-    echo -e "\033[0;31m[$(date '+%H:%M:%S')] ERROR: $1\033[0m"
-    exit 1
-}
-
 # Set timezone
-status "Setting timezone..."
+echo "Setting timezone..."
 ln -sf /usr/share/zoneinfo/TIMEZONE_PLACEHOLDER /etc/localtime
 hwclock --systohc
 
 # Set locale
-status "Setting locale..."
+echo "Setting locale..."
 
 # Ensure git is available
 sed -i -e '/^#\?\[extra\]/s/^#//' \
@@ -59,12 +50,12 @@ cd en_se
 chown -R nobody .
 
 if sudo -u nobody makepkg && pacman -U --noconfirm *.tar.xz; then
-    status "Installed en_SE locale from AUR"
+    echo "Installed en_SE locale from AUR"
     echo "en_SE.UTF-8 UTF-8" >> /etc/locale.gen
     locale-gen
     echo "LANG=en_SE.UTF-8" > /etc/locale.conf
 else
-    status "Failed to build/install en_SE, using fallback configuration"
+    echo "Failed to build/install en_SE, using fallback configuration"
     echo "en_GB.UTF-8 UTF-8" >> /etc/locale.gen
     echo "sv_SE.UTF-8 UTF-8" >> /etc/locale.gen
     locale-gen
@@ -92,7 +83,7 @@ cat > /etc/hosts << EOF
 EOF
 
 # Install essential packages
-status "Installing essential packages..."
+echo "Installing essential packages..."
 pacman -S --needed --noconfirm \
     efibootmgr \
     networkmanager \
@@ -116,7 +107,7 @@ pacman -S --needed --noconfirm \
     vulkan-icd-loader
 
 # Configure mkinitcpio for encryption with Plymouth
-status "Configuring mkinitcpio..."
+echo "Configuring mkinitcpio..."
 sed -i \
   -e 's/^\?HOOKS=.*microcode.*kms.*consolefont.*/#&/' \
   -e '/#^\?HOOKS=.*microcode.*kms.*consolefont.*/a \\n\# CUSTOM SYSTEMD HOOK\nHOOKS=(base systemd autodetect microcode plymouth modconf kms keyboard keymap sd-vconsole sd-encrypt block filesystems fsck)/' \
@@ -127,7 +118,7 @@ sed -i \
 mkinitcpio -P
 
 # Install and configure systemd-boot
-status "Installing systemd-boot..."
+echo "Installing systemd-boot..."
 bootctl install
 
 # Get UUIDs
@@ -151,7 +142,7 @@ editor no
 EOF
 
 # Configure crypttab for user volume
-status "Configuring crypttab..."
+echo "Configuring crypttab..."
 cat > /etc/crypttab << EOF
 # <name>       <device>                         <password>    <options>
 usrvol         UUID=$USRVOL_UUID                none          luks
@@ -168,25 +159,21 @@ systemctl enable NetworkManager
 systemctl enable docker
 
 # Enable package cache cleanup
-status "Enabling automatic package cache cleanup..."
+echo "Enabling automatic package cache cleanup..."
 systemctl enable --now paccache.timer
 
 # Create swapfile
-status "Creating 8GB swapfile..."
+echo "Creating 8GB swapfile..."
 btrfs filesystem mkswapfile --size 8g --uuid clear /.swapvol/swapfile
 swapon /.swapvol/swapfile
 echo "/.swapvol/swapfile none swap defaults 0 0" >> /etc/fstab
 
 setup_ml4w_post_install() {
-    status "Setting up ML4W post-installation script..."
+    echo "Setting up ML4W post-installation script..."
 
     cat > /home/USERNAME_PLACEHOLDER/ml4w-setup.sh << 'ML4W_SCRIPT_EOF'
 #!/bin/bash
 # ML4W Hyprland Setup - Run after first login
-
-warn() {
-    echo "WARNING: $1"
-}
 
 check_user() {
     if [[ $EUID -eq 0 ]]; then
@@ -223,7 +210,7 @@ install_gaming_packages() {
 
     for package in "${AUR_GAMING_PACKAGES[@]}"; do
         echo "Installing AUR package: $package..."
-        paru -S --needed --noconfirm "$package" || warn "Failed to install $package"
+        paru -S --needed --noconfirm "$package" || echo "Failed to install $package"
     done
 }
 
@@ -368,19 +355,19 @@ ML4W_SCRIPT_EOF
     chmod +x /home/USERNAME_PLACEHOLDER/ml4w-setup.sh
     chown USERNAME_PLACEHOLDER:USERNAME_PLACEHOLDER /home/USERNAME_PLACEHOLDER/ml4w-setup.sh
 
-    status "ML4W setup script created at /home/USERNAME_PLACEHOLDER/ml4w-setup.sh"
+    echo "ML4W setup script created at /home/USERNAME_PLACEHOLDER/ml4w-setup.sh"
 }
 
 # Setup ML4W post-installation script
 setup_ml4w_post_install
 
-status "Base configuration complete!"
-status "Post-installation:"
-status "  - Run ~/ml4w-setup.sh after first login for ML4W Hyprland"
-status "Post-installation recommendations:"
-status "  - Configure swapfile in /.swapvol if needed"
-status "  - Set up btrfs snapshots with timeshift or snapper"
-status "  - Install desktop environment"
+echo "Base configuration complete!"
+echo "Post-installation:"
+echo "  - Run ~/ml4w-setup.sh after first login for ML4W Hyprland"
+echo "Post-installation recommendations:"
+echo "  - Configure swapfile in /.swapvol if needed"
+echo "  - Set up btrfs snapshots with timeshift or snapper"
+echo "  - Install desktop environment"
 
 CHROOT_EOF
 

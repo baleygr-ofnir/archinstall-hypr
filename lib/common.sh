@@ -25,7 +25,8 @@ setup_logging() {
     }
 
     # Redirect all output through logging (but don't enable set -x yet)
-    exec 3>&1 1>> >(log) 4>&2 2>&1
+    exec 4>&1 1>> >(log) 5>&2 2>&1 3>&4
+    set +x
 }
 
 # Enable command tracing (call this after interactive setup)
@@ -42,20 +43,6 @@ move_log() {
     fi
 }
 
-# Simple status messages (bypass logging for user feedback)
-status() {
-    echo -e "${GREEN}[$(date '+%H:%M:%S')] $1${NC}" >&3 2>/dev/null || echo -e "${GREEN}[$(date '+%H:%M:%S')] $1${NC}"
-}
-
-warn() {
-    echo -e "${YELLOW}[$(date '+%H:%M:%S')] WARN: $1${NC}" >&3 2>/dev/null || echo -e "${YELLOW}[$(date '+%H:%M:%S')] WARN: $1${NC}"
-}
-
-error() {
-    echo -e "${RED}[$(date '+%H:%M:%S')] ERROR: $1${NC}" >&3 2>/dev/null || echo -e "${RED}[$(date '+%H:%M:%S')] ERROR: $1${NC}"
-    exit 1
-}
-
 # Confirmation prompt
 confirm() {
     if command -v gum &> /dev/null; then
@@ -69,8 +56,8 @@ confirm() {
 # Install modern TUI tools if available
 install_tui_tools() {
     if command -v pacman &> /dev/null && confirm "Install modern interface tools (gum, fzf) for better experience?"; then
-        status "Installing TUI tools..."
-        pacman -Sy --noconfirm gum fzf 2>/dev/null || warn "Failed to install TUI tools, using fallbacks"
+        echo "Installing TUI tools..."
+        pacman -Sy --noconfirm gum fzf 2>/dev/null || echo "Failed to install TUI tools, using fallbacks"
     fi
 }
 
@@ -163,7 +150,7 @@ get_partition_name() {
 
 # Clean exit handler
 cleanup() {
-    status "Cleaning up..."
+    echo "Cleaning up..."
     # Unmount any mounted filesystems
     umount -R /mnt 2>/dev/null || true
     # Close any open encrypted volumes
@@ -174,4 +161,4 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 # Export functions for use in sourced scripts
-export -f setup_logging enable_command_tracing status warn error confirm install_tui_tools validate_hostname validate_username validate_timezone check_block_device get_partition_name move_log
+export -f setup_logging enable_command_tracing confirm install_tui_tools validate_hostname validate_username validate_timezone check_block_device get_partition_name move_log
