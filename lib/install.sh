@@ -134,6 +134,80 @@ create_chroot_script() {
     echo $host_entry >> /etc/hosts
   done
 
+  # Install and configure systemd-boot
+  echo "Installing systemd-boot..."
+  bootctl install
+
+  # Get UUIDs
+  ROOT_UUID=$(blkid -s UUID -o value SYSVOL_PART_PLACEHOLDER)
+  USRVOL_UUID=$(blkid -s UUID -o value USRVOL_PART_PLACEHOLDER)
+
+  # Create boot entry
+  for loader_conf in \
+    "title   Arch Linux (Zen)" \
+    "linux   /vmlinuz-linux-zen" \
+    "initrd  /initramfs-linux-zen.img" \
+    "options root=UUID=$ROOT_UUID rootflags=subvol=@ rw quiet splash loglevel=3 rd.udev.log_priority=3 vt.global_cursor_default=0 preempt=full threadirqs idle=halt processor.max_cstate=1 nohz=on nohz_full=1-15 amd_pstate=active rcu_nocbs=1-15 udev.children_max=2 usbcore.autosuspend=-1 pcie_aspm=performance nvme_core.poll_queues=1 nowatchdog"
+  do
+    if [[ "$loader_conf" =~ "\(Zen\)" ]]; then
+      echo $loader_conf > /boot/loader/entries/arch.conf
+    else
+      echo $loader_conf >> /boot/loader/entries/arch.conf
+    fi
+  done
+
+  # Configure systemd-boot
+  for default_conf in \
+    "default arch.conf" \
+    "timeout 5" \
+    "console-mode max" \
+    "editor no"
+  do
+    if [[ "$default_conf" =~ "arch.conf" ]]; then
+      echo $default_conf > /boot/loader/loader.conf
+    else
+      echo $default_conf >> /boot/loader/loader.conf
+    fi
+  done
+
+  # Configure crypttab for user volume
+  echo "Configuring crypttab..."
+  #mv /etc/crypttab /etc/crypttab.bak
+  echo "# <name>       <device>                         <password>    <options>" > /etc/crypttab
+  echo "usrvol         UUID=$USRVOL_UUID                none          luks" >> /etc/crypttab
+
+  # Create swapfile
+  echo "Creating 8GB swapfile..."
+  btrfs filesystem mkswapfile --size 8g --uuid clear /.swapvol/swapfile
+  swapon /.swapvol/swapfile
+  echo "/.swapvol/swapfile none swap defaults 0 0" >> /etc/fstab
+  
+  echo "Installing ML4W Hyprland..."
+  sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm ml4w-hyprland
+  sleep 2
+  sudo -u USERNAME_PLACEHOLDER ml4w-hyprland-setup
+
+  # Configure Plymouth theme
+  echo "Setting Monoarch Plymouth theme..."
+  sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm plymouth-theme-monoarch
+  plymouth-set-default-theme -R monoarch
+
+  # Enable NetworkManager
+  systemctl enable NetworkManager
+  systemctl enable firewalld
+
+  # Enable package cache cleanup
+  echo "Enabling automatic package cache cleanup..."
+  systemctl enable paccache.timer
+
+  # Cleanup
+  echo "Cleaning up package cache..."
+  sudo -u USERNAME_PLACEHOLDER yay -Scc --noconfirm
+  # Rebuild initramfs
+  mkinitcpio -P
+
+  mkdir -p /home/USERNAME_PLACEHOLDER/.dev/archconf
+  cat<<'POST_EOF' > /home/USERNAME_PLACEHOLDER/.dev/archconf/post-install.sh
   # Install essential gaming prereq packages
   echo "Installing essential packages..."
   pacman -Syu --needed --noconfirm \
@@ -209,77 +283,8 @@ create_chroot_script() {
   sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm \
     jdk-temurin \
     ttf-ms-win11-auto
+  POST_EOF
 
-  # Install and configure systemd-boot
-  echo "Installing systemd-boot..."
-  bootctl install
-
-  # Get UUIDs
-  ROOT_UUID=$(blkid -s UUID -o value SYSVOL_PART_PLACEHOLDER)
-  USRVOL_UUID=$(blkid -s UUID -o value USRVOL_PART_PLACEHOLDER)
-
-  # Create boot entry
-  for loader_conf in \
-    "title   Arch Linux (Zen)" \
-    "linux   /vmlinuz-linux-zen" \
-    "initrd  /initramfs-linux-zen.img" \
-    "options root=UUID=$ROOT_UUID rootflags=subvol=@ rw quiet splash loglevel=3 rd.udev.log_priority=3 vt.global_cursor_default=0 preempt=full threadirqs idle=halt processor.max_cstate=1 nohz=on nohz_full=1-15 amd_pstate=active rcu_nocbs=1-15 udev.children_max=2 usbcore.autosuspend=-1 pcie_aspm=performance nvme_core.poll_queues=1 nowatchdog"
-  do
-    if [[ "$loader_conf" =~ "\(Zen\)" ]]; then
-      echo $loader_conf > /boot/loader/entries/arch.conf
-    else
-      echo $loader_conf >> /boot/loader/entries/arch.conf
-    fi
-  done
-
-  # Configure systemd-boot
-  for default_conf in \
-    "default arch.conf" \
-    "timeout 5" \
-    "console-mode max" \
-    "editor no"
-  do
-    if [[ "$default_conf" =~ "arch.conf" ]]; then
-      echo $default_conf > /boot/loader/loader.conf
-    else
-      echo $default_conf >> /boot/loader/loader.conf
-    fi
-  done
-
-  # Configure crypttab for user volume
-  echo "Configuring crypttab..."
-  #mv /etc/crypttab /etc/crypttab.bak
-  echo "# <name>       <device>                         <password>    <options>" > /etc/crypttab
-  echo "usrvol         UUID=$USRVOL_UUID                none          luks" >> /etc/crypttab
-
-  # Configure Plymouth theme
-  echo "Setting Monoarch Plymouth theme..."
-  sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm plymouth-theme-monoarch
-  plymouth-set-default-theme -R monoarch
-
-  # Enable NetworkManager
-  systemctl enable NetworkManager
-  systemctl enable firewalld
-
-  # Enable package cache cleanup
-  echo "Enabling automatic package cache cleanup..."
-  systemctl enable paccache.timer
-
-  # Create swapfile
-  echo "Creating 8GB swapfile..."
-  btrfs filesystem mkswapfile --size 8g --uuid clear /.swapvol/swapfile
-  swapon /.swapvol/swapfile
-  echo "/.swapvol/swapfile none swap defaults 0 0" >> /etc/fstab
-
-  echo "Installing ML4W Hyprland..."
-  sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm ml4w-hyprland
-  sleep 2
-  sudo -u USERNAME_PLACEHOLDER ml4w-hyprland-setup
-  # Cleanup
-  echo "Cleaning up package cache..."
-  sudo -u USERNAME_PLACEHOLDER yay -Scc --noconfirm
-  # Rebuild initramfs
-  mkinitcpio -P
 EOF
   # Replace placeholders
   sed -i "s/HOSTNAME_PLACEHOLDER/${HOSTNAME}/g" /mnt/configure_system.sh
