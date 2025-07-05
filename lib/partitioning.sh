@@ -5,6 +5,15 @@
 setup_partitions() {
     status "Partitioning disk $DISK..."
 
+    # Unmount any mounted filesystems
+    umount -R /mnt 2>/dev/null || true
+
+    # Close any open encrypted volumes
+    cryptsetup close usrvol 2>/dev/null || true
+
+    # Wipe filesystem signatures
+    wipefs -af "$DISK"
+
     # Clear any existing partition table
     sgdisk -Z "$DISK"
     sgdisk -o "$DISK"
@@ -16,12 +25,15 @@ setup_partitions() {
 
     # Inform kernel of changes
     partprobe "$DISK"
-    sleep 2
+    sleep 5
 
     # Set partition variables
     EFI_PART=$(get_partition_name "$DISK" 1)
     SYSVOL_PART=$(get_partition_name "$DISK" 2)
     USRVOL_PART=$(get_partition_name "$DISK" 3)
+
+    # Wipe partition signatures
+    wipefs -af "$EFI_PART" "$SYSVOL_PART" "$USRVOL_PART"
 
     status "Partitions created:"
     status "  EFI: $EFI_PART"
@@ -33,7 +45,7 @@ setup_partitions() {
 setup_encryption() {
     status "Setting up LUKS encryption for user volume..."
 
-    echo "$LUKS_PASSWORD" | cryptsetup luksFormat "$USRVOL_PART"
+    echo "$LUKS_PASSWORD" | cryptsetup luksFormat --batch-mode "$USRVOL_PART"
     echo "$LUKS_PASSWORD" | cryptsetup open "$USRVOL_PART" usrvol
 }
 
@@ -45,8 +57,8 @@ create_filesystems() {
     mkfs.fat -F32 "$EFI_PART"
 
     # Create btrfs filesystems
-    mkfs.btrfs -L sysvol "$SYSVOL_PART"
-    mkfs.btrfs -L usrvol /dev/mapper/usrvol
+    mkfs.btrfs -L sysvol -f "$SYSVOL_PART"
+    mkfs.btrfs -L usrvol -f /dev/mapper/usrvol
 
     # Create system subvolumes
     mount "$SYSVOL_PART" /mnt
