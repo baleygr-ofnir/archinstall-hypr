@@ -41,8 +41,11 @@ sed -i -e '/^#\?\[extra\]/s/^#//' \
     -e '/^#\?\[multilib\]/s/^#//' \
     -e '/^\[multilib\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
     /etc/pacman.conf
-pacman -Syu --noconfirm git sudo realtime-privileges cargo rust
+pacman -Syu --noconfirm git sudo realtime-privileges
 sleep 2
+pacman -S rustup
+sleep 2
+rustup default stable
 
 # User configuration
 echo "Creating user USERNAME_PLACEHOLDER..."
@@ -57,12 +60,12 @@ echo "USER_PASSWORD_PLACEHOLDER" | passwd --stdin
 sed -i -e '/^#\? %wheel.*) ALL.*/s/^# //' /etc/sudoers
 
 # Install paru from AUR
-cd /tmp
-git clone https://aur.archlinux.org/paru.git
-cd paru
-chown -R USERNAME_PLACEHOLDER .
+git clone https://aur.archlinux.org/paru.git /tmp/paru
+chown -R USERNAME_PLACEHOLDER /tmp/paru
+cd /tmp/paru
 sudo -u USERNAME_PLACEHOLDER makepkg
-pacman -U --noconfirm "/tmp/paru/"*.tar.xz
+pacman -U --noconfirm paru-*.pkg.tar.zst
+sleep 2
 
 if $(sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm en_se); then
     echo "Installed en_SE locale from AUR"
@@ -103,6 +106,7 @@ echo "Installing essential packages..."
 pacman -Syu --needed --noconfirm \
     efibootmgr \
     networkmanager \
+    nmap \
     neovim \
     plymouth \
     pacman-contrib \
