@@ -207,7 +207,7 @@ create_chroot_script() {
     openbsd-netcat \
     dmidecode
   sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm \
-    jdk-temurin
+    jdk-temurin \
     ttf-ms-win11-auto
 
   # Install and configure systemd-boot
