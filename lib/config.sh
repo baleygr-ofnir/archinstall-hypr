@@ -18,7 +18,7 @@ setup_interactive_config() {
   echo "Configuration complete:"
   echo "  Hostname: $HOSTNAME"
   echo "  Username: $USERNAME"
-  echo " Timezone: $TIMEZONE"
+  echo "  Timezone: $TIMEZONE"
   echo "  Target disk: $DISK"
   sleep 8
 }
