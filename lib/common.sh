@@ -68,9 +68,9 @@ validate_hostname() {
     if [[ ${#hostname} -lt 1 || ${#hostname} -gt 63 ]]; then
         return 1
     fi
-
+    printf "Hostname: '%s'\n" "$hostname"
     # Check format: letters, numbers, hyphens (no leading/trailing hyphens)
-    if [[ ${#hostname} =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$ ]]; then
+    if [[ "$hostname" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$ ]]; then
         return 0
     else
         return 1
