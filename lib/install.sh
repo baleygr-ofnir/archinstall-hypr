@@ -19,6 +19,8 @@ install_base_system() {
 configure_system() {
   echo "Configuring system..."
   create_chroot_script
+  mv /mnt/etc/mkinitcpio.conf /mnt/etc/mkinitcpio.conf.bak
+  cp MKINITCPIO_CONFSRC /mnt/etc/mkinitcpio.conf
   arch-chroot /mnt /configure_system.sh
   rm /mnt/configure_system.sh
 }
@@ -34,6 +36,10 @@ create_chroot_script() {
   echo "Setting timezone..."
   ln -sf /usr/share/zoneinfo/TIMEZONE_PLACEHOLDER /etc/localtime
   hwclock --systohc
+
+  # Configure vconsole keymap
+  mv /etc/vconsole.conf /etc/vconsole.conf.bak
+  echo "KEYMAP=sv-latin1" > /etc/vconsole.conf
 
   # Sudo config
   sed -i -e '/^#\? %wheel.*) ALL.*/s/^# //' /etc/sudoers
@@ -80,42 +86,56 @@ create_chroot_script() {
   # Set locale
   echo "Setting locale..."
   mv /etc/locale.gen /etc/locale.gen.bak
-  if sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm en_se; then
+  mv /etc/locale.conf /etc/locale.conf.bak
+  # sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm en_se
+  git clone https://aur.archlinux.org/en_se.git /tmp/en_se
+  chown -R USERNAME_PLACEHOLDER /tmp/en_se
+  cd /tmp/en_se
+  sudo -u USERNAME_PLACEHOLDER makepkg -s
+  sleep 2
+  if pacman -U --noconfirm "/tmp/en_se/en_se-"*.pkg.tar.zst; then
     echo "Installed en_SE locale from AUR"
     sleep 2
     echo "Enabling it in system"
     echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
     echo "en_SE.UTF-8 UTF-8" >> /etc/locale.gen
     locale-gen
+    sleep 2
     echo "Configuring as system language"
     echo "LANG=en_SE.UTF-8" > /etc/locale.conf
   else
     echo "Failed to build/install en_SE, using fallback configuration"
-    echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
-    echo "en_GB.UTF-8 UTF-8" >> /etc/locale.gen
-    echo "sv_SE.UTF-8 UTF-8" >> /etc/locale.gen
+    for fallback_locale in "en_US.UTF-8 UTF-8" "en_GB.UTF-8 UTF-8" "sv_SE.UTF-8 UTF-8"
+    do
+      echo "$fallback_locale" >> /etc/locale.gen
+    done
     locale-gen
-    echo "LANG=en_GB.UTF-8" > /etc/locale.conf
-    echo "LC_NUMERIC=sv_SE.UTF-8" >> /etc/locale.conf
-    echo "LC_TIME=sv_SE.UTF-8" >> /etc/locale.conf
-    echo "LC_MONETARY=sv_SE.UTF-8" >> /etc/locale.conf
-    echo "LC_PAPER=sv_SE.UTF-8" >> /etc/locale.conf
-    echo "LC_MEASUREMENT=sv_SE.UTF-8" >> /etc/locale.conf
+    sleep 2
+    for locale_entry in \
+      "LANG=en_GB.UTF-8" \
+      "LC_NUMERIC=sv_SE.UTF-8" \
+      "LC_TIME=sv_SE.UTF-8" \
+      "LC_MONETARY=sv_SE.UTF-8" \
+      "LC_PAPER=sv_SE.UTF-8" \
+      "LC_MEASUREMENT=sv_SE.UTF-8"
+    do
+      echo $locale_entry >> /etc/locale.conf
+    done
   fi
-  echo "KEYMAP=sv-latin1" > /etc/vconsole.conf
-  echo "VCONSOLE_EOF" >> /etc/vconsole.conf
+  rm -rf /tmp/en_se
   sleep 2
-
-  mv /etc/mkinitcpio.conf /etc/mkinitcpio.conf.bak
-  cp MKINITCPIO_CONFSRC /etc/mkinitcpio.conf
 
   # Set hostname
   echo "HOSTNAME_PLACEHOLDER" > /etc/hostname
   # Configure hosts file
   mv /etc/hosts /etc/hosts.bak
-  echo "127.0.0.1   localhost" > /etc/hosts
-  echo "::1         localhost" >> /etc/hosts
-  echo "127.0.1.1   HOSTNAME_PLACEHOLDER.LANDOMAIN_PLACEHOLDER.DOMAINSUFFIX_PLACEHOLDER HOSTNAME_PLACEHOLDER" >> /etc/hosts
+  for host_entry in \
+    "127.0.0.1   localhost" \
+    "::1         localhost" \
+    "127.0.1.1   HOSTNAME_PLACEHOLDER.LANDOMAIN_PLACEHOLDER.DOMAINSUFFIX_PLACEHOLDER HOSTNAME_PLACEHOLDER"
+  do
+    echo $host_entry >> /etc/hosts
+  done
 
   # Install essential gaming prereq packages
   echo "Installing essential packages..."
@@ -190,8 +210,7 @@ create_chroot_script() {
     openbsd-netcat \
     dmidecode
   sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm \
-    jdk-temurin \
-    ttf-ms-win10-auto \
+    jdk-temurin
     ttf-ms-win11-auto
 
   # Install and configure systemd-boot
@@ -204,24 +223,31 @@ create_chroot_script() {
 
   # Create boot entry
   mv /boot/loader/entries/arch.conf /boot/loader/entries/arch.conf.bak
-  echo "title   Arch Linux (Zen)" > /boot/loader/entries/arch.conf
-  echo "linux   /vmlinuz-linux-zen" >> /boot/loader/entries/arch.conf
-  echo "initrd  /initramfs-linux-zen.img" >> /boot/loader/entries/arch.conf
-  echo "options root=UUID=$ROOT_UUID rootflags=subvol=@ rw quiet splash loglevel=3 rd.udev.log_priority=3 vt.global_cursor_default=0 preempt=full threadirqs idle=halt processor.max_cstate=1 nohz=on nohz_full=1-15 amd_pstate=active rcu_nocbs=1-15 udev.children_max=2 usbcore.autosuspend=-1 pcie_aspm=performance nvme_core.poll_queues=1 nowatchdog" >> /boot/loader/entries/arch.conf
+  for loader_conf in \
+    "title   Arch Linux (Zen)" \
+    "linux   /vmlinuz-linux-zen" \
+    "initrd  /initramfs-linux-zen.img" \
+    "options root=UUID=$ROOT_UUID rootflags=subvol=@ rw quiet splash loglevel=3 rd.udev.log_priority=3 vt.global_cursor_default=0 preempt=full threadirqs idle=halt processor.max_cstate=1 nohz=on nohz_full=1-15 amd_pstate=active rcu_nocbs=1-15 udev.children_max=2 usbcore.autosuspend=-1 pcie_aspm=performance nvme_core.poll_queues=1 nowatchdog"
+  do
+    echo $loader_conf >> /boot/loader/entries/arch.conf
+  done
 
   # Configure systemd-boot
   mv /boot/loader/loader.conf /boot/loader/loader.conf.bak
-  echo "default arch.conf" > /boot/loader/loader.conf
-  echo "timeout 3" >> /boot/loader/loader.conf
-  echo "console-mode max" >> /boot/loader/loader.conf
-  echo "editor no" >> /boot/loader/loader.conf
+  for default_conf in \
+    "default arch.conf" \
+    "timeout 5" \
+    "console-mode max" \
+    "editor no"
+  do
+    echo $default_conf >> /boot/loader/loader.conf
+  done
 
   # Configure crypttab for user volume
   echo "Configuring crypttab..."
   mv /etc/crypttab /etc/crypttab.bak
   echo "# <name>       <device>                         <password>    <options>" > /etc/crypttab
   echo "usrvol         UUID=$USRVOL_UUID                none          luks" >> /etc/crypttab
-  CRYPTTAB_EOF
 
   # Configure Plymouth theme
   echo "Setting Monoarch Plymouth theme..."
@@ -249,7 +275,6 @@ create_chroot_script() {
   # Cleanup
   echo "Cleaning up package cache..."
   sudo -u USERNAME_PLACEHOLDER yay -Scc --noconfirm
-  rm -rf /tmp/yay
   # Rebuild initramfs
   mkinitcpio -P
 EOF
@@ -263,6 +288,5 @@ EOF
   sed -i "s|TIMEZONE_PLACEHOLDER|${TIMEZONE}|g" /mnt/configure_system.sh
   sed -i "s|SYSVOL_PART_PLACEHOLDER|${SYSVOL_PART}|g" /mnt/configure_system.sh
   sed -i "s|USRVOL_PART_PLACEHOLDER|${USRVOL_PART}|g" /mnt/configure_system.sh
-  sed -i "s|MKINITCPIO_CONFSRC|${MKINITCPIO_CONF}|g" /mnt/configure_system.sh
   chmod +x /mnt/configure_system.sh
 }
