@@ -52,6 +52,7 @@ create_filesystems() {
     mount "$SYSVOL_PART" /mnt
     btrfs subvolume create /mnt/@
     btrfs subvolume create /mnt/@root
+    btrfs subvolume create /mnt/@var
     btrfs subvolume create /mnt/@var/cache
     btrfs subvolume create /mnt/@var/log
     btrfs subvolume create /mnt/@var/tmp
