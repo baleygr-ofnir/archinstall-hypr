@@ -65,7 +65,7 @@ perform_installation() {
     setup_encryption
     create_filesystems
     mount_filesystems
-    move_log
+    #move_log
     install_base_system
     configure_system
 }
