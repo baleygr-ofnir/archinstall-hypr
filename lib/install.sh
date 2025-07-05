@@ -42,6 +42,7 @@ sed -i -e '/^#\?\[extra\]/s/^#//' \
     -e '/^\[multilib\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
     /etc/pacman.conf
 pacman -Sy --noconfirm git sudo realtime-privileges
+sleep 2
 
 # User configuration
 echo "Creating user USERNAME_PLACEHOLDER..."
@@ -60,8 +61,8 @@ cd /tmp
 git clone https://aur.archlinux.org/paru.git
 cd paru
 chown -R USERNAME_PLACEHOLDER .
-su - USERNAME_PLACEHOLDER -c "makepkg -si --noconfirm"
-
+su - USERNAME_PLACEHOLDER -c "makepkg"
+pacman -U --noconfirm "/tmp/paru/"*.tar.xz
 if su - USERNAME_PLACEHOLDER -c "paru -S --noconfirm en_se"; then
     echo "Installed en_SE locale from AUR"
     echo "en_SE.UTF-8 UTF-8" >> /etc/locale.gen
@@ -175,6 +176,10 @@ btrfs filesystem mkswapfile --size 8g --uuid clear /.swapvol/swapfile
 swapon /.swapvol/swapfile
 echo "/.swapvol/swapfile none swap defaults 0 0" >> /etc/fstab
 
+echo "Installing ML4W Hyprland..."
+su - USERNAME_PLACEHOLDER -c "cd /tmp; git clone https://aur.archlinux.org/ml4w-hyprland.git; cd ml4w-hyprland; makepkg"
+pacman -U --noconfirm "/tmp/ml4w-hyprland/"*.tar.xz
+
 setup_ml4w_post_install() {
     echo "Setting up ML4W post-installation script..."
 
@@ -207,11 +212,6 @@ install_gaming_packages() {
         echo "Installing AUR package: $package..."
         paru -S --needed --noconfirm "$package" || echo "Failed to install $package"
     done
-}
-
-install_ml4w_hyprland() {
-    echo "Installing ML4W Hyprland..."
-    bash -c "$(curl -s https://raw.githubusercontent.com/mylinuxforwork/dotfiles/main/setup-arch.sh)"
 }
 
 configure_monitor() {
