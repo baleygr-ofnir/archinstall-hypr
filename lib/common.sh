@@ -7,9 +7,8 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Setup logging
+# Setup logging (without set -x)
 setup_logging() {
-    # shellcheck disable=SC2155
     local log_name="archinstall_${HOSTNAME:-unknown}_$(date +"%Y-%m-%d-%H%M").log"
     outlog="/var/log/$log_name"
     target_log="/mnt/var/log/$log_name"
@@ -19,15 +18,19 @@ setup_logging() {
 
     # Logging function
     log() {
-        # shellcheck disable=SC2162
         while read
         do
             printf "%(%Y-%m-%d_%T)T %s\n" -1 "$REPLY" | tee -a "$outlog"
         done
     }
 
-    # Redirect all output through logging
+    # Redirect all output through logging (but don't enable set -x yet)
     exec 3>&1 1>> >(log) 4>&2 2>&1
+}
+
+# Enable command tracing (call this after interactive setup)
+enable_command_tracing() {
+    set -x
 }
 
 # Move log to target system

@@ -34,9 +34,7 @@ main() {
     check_requirements
     setup_interactive_config
     confirm_installation
-
-    set -x
-
+    enable_command_tracing
     perform_installation
     cleanup_and_finish
 }
