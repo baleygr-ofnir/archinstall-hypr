@@ -41,7 +41,7 @@ sed -i -e '/^#\?\[extra\]/s/^#//' \
     -e '/^#\?\[multilib\]/s/^#//' \
     -e '/^\[multilib\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
     /etc/pacman.conf
-pacman -Syu --noconfirm git sudo realtime-privileges
+pacman -Syu --noconfirm git sudo realtime-privileges zsh
 sleep 2
 pacman -S --noconfirm rustup
 rustup default stable
@@ -51,7 +51,7 @@ sleep 2
 
 # User configuration
 echo "Creating user USERNAME_PLACEHOLDER..."
-useradd -m -G realtime,storage,wheel -s /bin/bash USERNAME_PLACEHOLDER
+useradd -m -G realtime,storage,wheel -s /bin/zsh USERNAME_PLACEHOLDER
 chpasswd --encrypted << EOF
 USERNAME_PLACEHOLDER:$(mkpasswd -m sha-512 -s <<< "USER_PASSWORD_PLACEHOLDER")
 EOF
@@ -71,7 +71,7 @@ sudo -u USERNAME_PLACEHOLDER makepkg -s
 pacman -U --noconfirm paru-*.pkg.tar.zst
 sleep 2
 
-if $(sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm en_se); then
+if $(sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm en_se oh-my-zsh-git); then
     echo "Installed en_SE locale from AUR"
     echo "en_SE.UTF-8 UTF-8" >> /etc/locale.gen
     locale-gen
