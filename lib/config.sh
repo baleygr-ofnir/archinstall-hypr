@@ -25,7 +25,7 @@ setup_interactive_config() {
 get_hostname() {
     while true; do
         if command -v gum &> /dev/null; then
-            HOSTNAME=$(gum input --placeholder "Enter hostname (e.g., archdesktop)" --prompt "Hostname: " >&3)
+            HOSTNAME=$(gum input --placeholder "Enter hostname (e.g., archdesktop)" --prompt "Hostname: " >&3 2>&5)
         elif command -v dialog &> /dev/null; then
             HOSTNAME=$(dialog --title "System Configuration" --inputbox "Enter hostname:" 8 40 3>&1 1>&2 2>&3)
         else
