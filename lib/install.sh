@@ -119,7 +119,6 @@ create_chroot_script() {
   fi
   rm -rf /tmp/en_se
   # Configure vconsole keymap
-  mv /etc/vconsole.conf /etc/vconsole.conf.bak
   echo "KEYMAP=sv-latin1" > /etc/vconsole.conf
   sleep 2
 
