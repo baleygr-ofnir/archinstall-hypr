@@ -28,7 +28,6 @@ setup_logging() {
 
     # Redirect all output through logging
     exec 3>&1 1>> >(log) 4>&2 2>&1
-    set -x
 }
 
 # Move log to target system

@@ -30,10 +30,13 @@ source "${SCRIPT_DIR}/lib/install.sh"
 
 # Main installation flow
 main() {
-    setup_logging
     check_requirements
     setup_interactive_config
+    setup_logging
     confirm_installation
+
+    set -x
+
     perform_installation
     cleanup_and_finish
 }
