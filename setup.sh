@@ -1,8 +1,6 @@
 #!/bin/bash
 # setup.sh - Setup and run the modular Arch Linux installation
-
 set -e
-
 INSTALL_DIR="${PWD}"
 
 # Make scripts executable
