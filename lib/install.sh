@@ -197,7 +197,7 @@ EOF
   chmod +x /mnt/configure_system.sh
   cp -r "${SCRIPT_DIR}/conf/boot" /mnt
   chown -R 0:0 /mnt/boot/loader
-  mv "${SCRIPT_DIR}/conf/etc" /mnt
+  cp -r "${SCRIPT_DIR}/conf/etc" /mnt
   chown -R 0:0 /mnt/etc/{crypttab.conf,mkinitcpio.conf,hostname,hosts,vconsole.conf}
   sed -i -e "s/HOSTNAME_PLACEHOLDER/${HOSTNAME}/g" \
     -e "s/LANDOMAIN_PLACEHOLDER/${LANDOMAIN}/g" \
