@@ -19,10 +19,20 @@ install_base_system() {
 configure_system() {
   echo "Configuring system..."
   create_chroot_script
+  cp -r "${SCRIPT_DIR}/conf/boot" /mnt
   mv /mnt/etc/mkinitcpio.conf /mnt/etc/mkinitcpio.conf.bak
-  cp "${SCRIPT_DIR}/conf/mkinitcpio.conf" /mnt/etc/mkinitcpio.conf
+  mv /mnt/etc/hosts /mnt/etc/hosts.bak
+  cp -r "${SCRIPT_DIR}"/conf/etc /mnt
+  sed -i -e "s/HOSTNAME_PLACEHOLDER/${HOSTNAME}/g" \
+    -e "s/LANDOMAIN_PLACEHOLDER/${LANDOMAIN}/g" \
+    -e "s/DOMAINSUFFIX_PLACEHOLDER/${DOMAINSUFFIX}/g" /mnt/etc/hosts
+  echo "${HOSTNAME}" > /mnt/etc/hostname
   arch-chroot /mnt /configure_system.sh
   rm /mnt/configure_system.sh
+  cp "${SCRIPT_DIR}/lib/post_install.sh" "/mnt/home/${USERNAME}/"
+  chown -R "${USERNAME}:${USERNAME}" "/mnt/${USERNAME}/post_install.sh"
+  cp "${SCRIPT_DIR}/.local" "/mnt/home/${USERNAME}/"
+  chown -R "${USERNAME}:${USERNAME}" "/mnt/${USERNAME}/.local"
 }
 
 # Create configuration script for chroot environment
@@ -37,17 +47,17 @@ create_chroot_script() {
   ln -sf /usr/share/zoneinfo/TIMEZONE_PLACEHOLDER /etc/localtime
   hwclock --systohc
 
-  # Sudo config
-  sed -i -e '/^#\? %wheel.*) ALL.*/s/^# //' /etc/sudoers
   # Prereqs for arch-chroot env
-  echo "Enabling extra and multilib repositories"
+  echo "Enabling extra and multilib repositories as well as ignoring unwanted packages from ML4W Hyprland setup..."
   sed -i \
     -e '/^#\?\[extra\]/s/^#//' \
     -e '/^\[extra\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
     -e '/^#\?\[multilib\]/s/^#//' \
     -e '/^\[multilib\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
-    /etc/pacman.conf
+    -e '/^#\?\IgnorePkg.*/s/^#//' \
+    -e 's/^IgnorePkg.*=/& firefox nautilus /' /etc/pacman.conf
   pacman -Syu --noconfirm --needed \
+    amd-ucode \
     efibootmgr \
     firewalld \
     networkmanager \
@@ -56,9 +66,20 @@ create_chroot_script() {
     plymouth \
     pacman-contrib \
     git \
-    go \
+    gum \
     realtime-privileges \
-    zsh
+    timeshift \
+    zsh \
+    zsh-autocomplete \
+    zsh-autosuggestions \
+    zsh-completions \
+    zsh-doc \
+    zsh-history-substring-search \
+    zsh-syntax-highlighting \
+    rustup
+
+  echo "Setting default toolchain for rust..."
+  rustup default stable
 
   # User configuration
   echo "Creating user USERNAME_PLACEHOLDER..."
@@ -67,32 +88,25 @@ create_chroot_script() {
 
   # Root configuration
   echo 'root:ROOT_PASSWORD_PLACEHOLDER' | chpasswd -c SHA512
+  
+  # Sudo config
+  sed -i -e '/^#\? %wheel.*) ALL.*/s/^# //' /etc/sudoers
   sleep 2
 
-  # Install yay - go-based AUR helper
-  git clone https://aur.archlinux.org/yay.git /tmp/yay
-  chown -R USERNAME_PLACEHOLDER /tmp/yay
-  cd /tmp/yay
-  sudo -u USERNAME_PLACEHOLDER makepkg -s
-  pacman -U --noconfirm yay-*.pkg.tar.zst
-  sleep 2
-  sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm oh-my-zsh-git
-  sudo -u USERNAME_PLACEHOLDER sudo cp /usr/share/oh-my-zsh/zshrc /home/USERNAME_PLACEHOLDER/.zshrc
-  cd
   # Set locale
   echo "Setting locale..."
   mv /etc/locale.gen /etc/locale.gen.bak
-  # sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm en_se
+  # sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm en_se
   git clone https://aur.archlinux.org/en_se.git /tmp/en_se
-  chown -R USERNAME_PLACEHOLDER /tmp/en_se
+  chown -R nobody /tmp/en_se
   cd /tmp/en_se
-  sudo -u USERNAME_PLACEHOLDER makepkg -s
+  sudo -u nobody makepkg -s
   sleep 2
   if pacman -U --noconfirm "/tmp/en_se/en_se-"*.pkg.tar.zst; then
     echo "Installed en_SE locale from AUR"
     sleep 2
     echo "Enabling it in system"
-    echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
     echo "en_SE.UTF-8 UTF-8" >> /etc/locale.gen
     locale-gen
     sleep 2
@@ -100,13 +114,16 @@ create_chroot_script() {
     echo "LANG=en_SE.UTF-8" > /etc/locale.conf
   else
     echo "Failed to build/install en_SE, using fallback configuration"
-    for fallback_locale in "en_US.UTF-8 UTF-8" "en_GB.UTF-8 UTF-8" "sv_SE.UTF-8 UTF-8"
+    for fallback_locale-gen in \
+        "en_US.UTF-8 UTF-8" \
+        "en_GB.UTF-8 UTF-8" \
+        "sv_SE.UTF-8 UTF-8"
     do
-      echo "$fallback_locale" >> /etc/locale.gen
+      echo "${fallback_locale-gen}" >> /etc/locale.gen
     done
     locale-gen
     sleep 2
-    for locale_entry in \
+    for fallback_locale-conf in \
       "LANG=en_GB.UTF-8" \
       "LC_NUMERIC=sv_SE.UTF-8" \
       "LC_TIME=sv_SE.UTF-8" \
@@ -114,67 +131,25 @@ create_chroot_script() {
       "LC_PAPER=sv_SE.UTF-8" \
       "LC_MEASUREMENT=sv_SE.UTF-8"
     do
-      echo $locale_entry >> /etc/locale.conf
+      echo "${fallback_locale-conf}" >> /etc/locale.conf
     done
   fi
   cd
   rm -rf /tmp/en_se
-  # Configure vconsole keymap
-  echo "KEYMAP=sv-latin1" > /etc/vconsole.conf
-  sleep 2
-
-  # Set hostname
-  echo "HOSTNAME_PLACEHOLDER" > /etc/hostname
-  # Configure hosts file
-  mv /etc/hosts /etc/hosts.bak
-  for host_entry in \
-    "127.0.0.1   localhost" \
-    "::1         localhost" \
-    "127.0.1.1   HOSTNAME_PLACEHOLDER.LANDOMAIN_PLACEHOLDER.DOMAINSUFFIX_PLACEHOLDER HOSTNAME_PLACEHOLDER"
-  do
-    echo $host_entry >> /etc/hosts
-  done
-
-  # Install and configure systemd-boot
-  echo "Installing systemd-boot..."
-  bootctl install
 
   # Get UUIDs
   ROOT_UUID=$(blkid -s UUID -o value SYSVOL_PART_PLACEHOLDER)
   USRVOL_UUID=$(blkid -s UUID -o value USRVOL_PART_PLACEHOLDER)
 
-  # Create boot entry
-  for loader_conf in \
-    "title   Arch Linux (Zen)" \
-    "linux   /vmlinuz-linux-zen" \
-    "initrd  /initramfs-linux-zen.img" \
-    "options root=UUID=$ROOT_UUID rootflags=subvol=@ rw quiet splash loglevel=3 rd.udev.log_priority=3 vt.global_cursor_default=0 preempt=full threadirqs idle=halt processor.max_cstate=1 nohz=on nohz_full=1-15 amd_pstate=active rcu_nocbs=1-15 udev.children_max=2 usbcore.autosuspend=-1 pcie_aspm=performance nvme_core.poll_queues=1 nowatchdog"
-  do
-    if [[ "$loader_conf" =~ "\(Zen\)" ]]; then
-      echo $loader_conf > /boot/loader/entries/arch.conf
-    else
-      echo $loader_conf >> /boot/loader/entries/arch.conf
-    fi
-  done
+  # Install and configure systemd-boot
+  echo "Installing systemd-boot..."
+  bootctl install
 
   # Configure systemd-boot
-  for default_conf in \
-    "default arch.conf" \
-    "timeout 5" \
-    "console-mode max" \
-    "editor no"
-  do
-    if [[ "$default_conf" =~ "arch.conf" ]]; then
-      echo $default_conf > /boot/loader/loader.conf
-    else
-      echo $default_conf >> /boot/loader/loader.conf
-    fi
-  done
-
-  # Configure crypttab for user volume
-  echo "Configuring crypttab..."
-  echo "# <name>       <device>                         <password>    <options>" > /etc/crypttab
-  echo "usrvol         UUID=$USRVOL_UUID                none          luks" >> /etc/crypttab
+  sed -i -e "s|SYSVOL_UUID_PLACEHOLDER|${ROOT_UUID}|" /boot/loader/entries/arch.conf
+    
+  cp "SCRIPT_DIR"/conf/crypttab /etc/crypttab
+  sed -i -e "s|USRVOL_UUID_PLACEHOLDER|${USRVOL_UUID}|" /etc/crypttab
 
   # Create swapfile
   echo "Creating 8GB swapfile..."
@@ -182,16 +157,20 @@ create_chroot_script() {
   swapon /.swapvol/swapfile
   echo "/.swapvol/swapfile none swap defaults 0 0" >> /etc/fstab
 
-  echo "Installing ML4W Hyprland..."
+  # Paru install
+  echo "Installing paru - rust-based AUR helper"
+  git clone https://aur.archlinux.org/paru.git /tmp/paru
+  chown -r nobody /tmp/paru
+  cd /tmp/paru
+  sudo -u nobody makepkg -s
   cd
-  sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm ml4w-hyprland
+  pacman -U --noconfirm /tmp/paru/paru-*.pkg.tar.zst
   sleep 2
-  sudo -u USERNAME_PLACEHOLDER ml4w-hyprland-setup
 
   # Configure Plymouth theme
   echo "Setting Monoarch Plymouth theme..."
   cd
-  sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm plymouth-theme-monoarch
+  sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm plymouth-theme-monoarch
   plymouth-set-default-theme -R monoarch
 
   # Enable NetworkManager
@@ -202,96 +181,22 @@ create_chroot_script() {
   echo "Enabling automatic package cache cleanup..."
   systemctl enable paccache.timer
 
+  # Enable bluetooth at start
+  systemctl enable bluetooth
+
+  echo "Installing ML4W Hyprland..."
+  cd
+  sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm ml4w-hyprland
+  sleep 2
+  sudo -u USERNAME_PLACEHOLDER ml4w-hyprland-setup
+
   # Cleanup
   echo "Cleaning up package cache..."
-  sudo -u USERNAME_PLACEHOLDER yay -Scc --noconfirm
+  sudo -u USERNAME_PLACEHOLDER paru -Scc --noconfirm
   # Rebuild initramfs
   mkinitcpio -P
-
-  mkdir -p /home/USERNAME_PLACEHOLDER/.dev/archconf
-  cat<<'POST_EOF' > /home/USERNAME_PLACEHOLDER/.dev/archconf/post-install.sh
-  # Install essential gaming prereq packages
-  echo "Installing essential packages..."
-  pacman -Syu --needed --noconfirm \
-    tmux \
-    obs-studio \
-    flatpak \
-    steam \
-    lutris \
-    wine \
-    winetricks \
-    wine-mono \
-    wine-gecko \
-    gamemode \
-    lib32-gamemode \
-    mesa \
-    lib32-mesa \
-    xf86-video-amdgpu \
-    vulkan-tools \
-    lib32-vulkan-icd-loader \
-    vulkan-icd-loader \
-    vulkan-radeon \
-    lib32-vulkan-radeon \
-    ttf-liberation \
-    ttf-liberation-mono-nerd \
-    libvirt \
-    libvirt-dbus \
-    libvirt-glib \
-    libvirt-python \
-    libvirt-storage-gluster \
-    libvirt-storage-iscsi-direct \
-    qemu-audio-alsa \
-    qemu-audio-dbus \
-    qemu-audio-pipewire \
-    qemu-audio-sdl \
-    qemu-audio-spice \
-    qemu-base \
-    qemu-block-curl \
-    qemu-block-iscsi \
-    qemu-block-nfs \
-    qemu-block-ssh \
-    qemu-chardev-baum \
-    qemu-chardev-spice \
-    qemu-common \
-    qemu-desktop \
-    qemu-docs \
-    qemu-emulators-full \
-    qemu-guest-agent \
-    qemu-hw-display-qxl \
-    qemu-hw-display-virtio-gpu \
-    qemu-hw-display-virtio-gpu-gl \
-    qemu-hw-display-virtio-gpu-pci \
-    qemu-hw-display-virtio-gpu-pci-gl \
-    qemu-hw-uefi-vars \
-    qemu-hw-usb-host \
-    qemu-hw-usb-redirect \
-    qemu-img \
-    qemu-system-x86 \
-    qemu-system-x86-firmware \
-    qemu-tools \
-    qemu-ui-egl-headless \
-    qemu-ui-gtk \
-    qemu-ui-opengl \
-    qemu-ui-sdl \
-    qemu-ui-spice-app \
-    qemu-ui-spice-core \
-    qemu-user \
-    qemu-user-static \
-    qemu-user-static-binfmt \
-    virt-manager \
-    dnsmasq \
-    openbsd-netcat \
-    dmidecode
-  sudo -u USERNAME_PLACEHOLDER yay -S --noconfirm \
-    jdk-temurin \
-    ttf-ms-win11-auto
-  POST_EOF
-
 EOF
   # Replace placeholders
-  sed -i "s/HOSTNAME_PLACEHOLDER/${HOSTNAME}/g" /mnt/configure_system.sh
-  sed -i "s/LANDOMAIN_PLACEHOLDER/${LANDOMAIN}/g" /mnt/configure_system.sh
-  sed -i "s/DOMAINSUFFIX_PLACEHOLDER/${DOMAINSUFFIX}/g" /mnt/configure_system.sh
   sed -i "s/USERNAME_PLACEHOLDER/${USERNAME}/g" /mnt/configure_system.sh
   sed -i "s/USER_PASSWORD_PLACEHOLDER/${USER_PASSWORD}/g" /mnt/configure_system.sh
   sed -i "s/ROOT_PASSWORD_PLACEHOLDER/${ROOT_PASSWORD}/g" /mnt/configure_system.sh
