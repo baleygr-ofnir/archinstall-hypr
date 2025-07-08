@@ -67,11 +67,7 @@ create_chroot_script() {
     zsh-completions \
     zsh-doc \
     zsh-history-substring-search \
-    zsh-syntax-highlighting \
-    rustup
-
-  echo "Setting default toolchain for rust..."
-  rustup default stable
+    zsh-syntax-highlighting
 
   # User configuration
   echo "Creating user USERNAME_PLACEHOLDER..."
