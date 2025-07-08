@@ -48,10 +48,6 @@ setup_partitions() {
 setup_encryption() {
   echo "Setting up LUKS encryption for user volume..."
 
-  hexdump -C <<< "$LUKS_PASSWORD"
-  
-  sleep 5
-
   cryptsetup luksFormat --batch-mode "$USRVOL_PART" <<< "$LUKS_PASSWORD"
   sleep 2
   cryptsetup open "$USRVOL_PART" usrvol <<< "$LUKS_PASSWORD"
