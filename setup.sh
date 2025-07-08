@@ -4,7 +4,12 @@ set -e
 INSTALL_DIR="/tmp/archinstall"
 
 pacman -Sy --needed --noconfirm git
-git clone https://github.com/baleygr-ofnir/archinstall.git "$INSTALL_DIR"
+
+if [ ! -d /tmp/archinstall ];then
+    git clone https://github.com/baleygr-ofnir/archinstall.git "$INSTALL_DIR"
+else
+    echo "Already downloaded in: /tmp/archinstall, continuing..."
+fi
 
 # Make scripts executable
 set_permissions() {
