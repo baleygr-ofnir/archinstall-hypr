@@ -21,7 +21,7 @@ setup_partitions() {
 
   # Create partitions using sgdisk for GPT
   sgdisk -n 1:0:+"$EFI_SIZE" -t 1:ef00 -c 1:"EFI System" "$DISK"
-  sgdisk -n 2:0:+"$SYSVOL_SIZE" -t 2:8305 -c 2:"Linux root" "$DISK"
+  sgdisk -n 2:0:+"$SYSVOL_SIZE" -t 2:8300 -c 2:"Linux root" "$DISK"
   sgdisk -n 3:0:0 -t 3:8309 -c 3:"Linux LUKS" "$DISK"
 
   sgdisk -p "$DISK"
