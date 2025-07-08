@@ -19,20 +19,11 @@ install_base_system() {
 configure_system() {
   echo "Configuring system..."
   create_chroot_script
-  cp -r "${SCRIPT_DIR}/conf/boot" /mnt
-  chown -R 0:0 /mnt/boot/loader
-  mv /mnt/etc/mkinitcpio.conf /mnt/etc/mkinitcpio.conf.bak
-  mv /mnt/etc/hosts /mnt/etc/hosts.bak
-  cp -r "${SCRIPT_DIR}/conf/etc" /mnt
-  chown -R 0:0 /mnt/etc/{crypttab.conf,mkinitcpio.conf,hostname,hosts,vconsole.conf}
-  sed -i -e "s/HOSTNAME_PLACEHOLDER/${HOSTNAME}/g" \
-    -e "s/LANDOMAIN_PLACEHOLDER/${LANDOMAIN}/g" \
-    -e "s/DOMAINSUFFIX_PLACEHOLDER/${DOMAINSUFFIX}/g" /mnt/etc/hosts
-  echo "${HOSTNAME}" > /mnt/etc/hostname
+
   arch-chroot /mnt /configure_system.sh
   rm /mnt/configure_system.sh
-  cp "${SCRIPT_DIR}/lib/post_install.sh" "/mnt/home/${USERNAME}/"
-  cp "${SCRIPT_DIR}/lib/.local" "/mnt/home/${USERNAME}/"
+  mv "${SCRIPT_DIR}/lib/post_install.sh" "/mnt/home/${USERNAME}/"
+  mv "${SCRIPT_DIR}/lib/.local" "/mnt/home/${USERNAME}/"
   chown "${USERNAME}:${USERNAME}" "/mnt/${USERNAME}/{.local/share/applications/timeshift.desktop,post_install.sh}"
 }
 
@@ -193,7 +184,7 @@ create_chroot_script() {
 
   # Cleanup
   echo "Cleaning up package cache..."
-  sudo -u USERNAME_PLACEHOLDER paru -Scc --noconfirm
+  sudo -u nobody paru -Scc --noconfirm
   # Rebuild initramfs
   mkinitcpio -P
 EOF
@@ -205,4 +196,14 @@ EOF
   sed -i "s|SYSVOL_PART_PLACEHOLDER|${SYSVOL_PART}|g" /mnt/configure_system.sh
   sed -i "s|USRVOL_PART_PLACEHOLDER|${USRVOL_PART}|g" /mnt/configure_system.sh
   chmod +x /mnt/configure_system.sh
+  cp -r "${SCRIPT_DIR}/conf/boot" /mnt
+  chown -R 0:0 /mnt/boot/loader
+  mv /mnt/etc/mkinitcpio.conf /mnt/etc/mkinitcpio.conf.bak
+  mv /mnt/etc/hosts /mnt/etc/hosts.bak
+  cp -r "${SCRIPT_DIR}/conf/etc" /mnt
+  chown -R 0:0 /mnt/etc/{crypttab.conf,mkinitcpio.conf,hostname,hosts,vconsole.conf}
+  sed -i -e "s/HOSTNAME_PLACEHOLDER/${HOSTNAME}/g" \
+    -e "s/LANDOMAIN_PLACEHOLDER/${LANDOMAIN}/g" \
+    -e "s/DOMAINSUFFIX_PLACEHOLDER/${DOMAINSUFFIX}/g" /mnt/etc/hosts
+  echo "${HOSTNAME}" > /mnt/etc/hostname
 }
