@@ -129,15 +129,20 @@ create_chroot_script() {
   ROOT_UUID=$(blkid -s UUID -o value SYSVOL_PART_PLACEHOLDER)
   USRVOL_UUID=$(blkid -s UUID -o value USRVOL_PART_PLACEHOLDER)
 
+  echo "USRVOL_PART_PLACEHOLDER"
+  echo "$USRVOL_UUID"
+
+  read -p "Press any key to continue..." -n1 -s
+
   # Install and configure systemd-boot
   echo "Installing systemd-boot..."
   bootctl install
 
   # Configure systemd-boot
-  sed -i -e "s|SYSVOL_UUID_PLACEHOLDER|${ROOT_UUID}|" /boot/loader/entries/arch.conf
+  sed -i -e "s/SYSVOL_UUID_PLACEHOLDER/${ROOT_UUID}/" /boot/loader/entries/arch.conf
   
   # Configure encrypted device
-  sed -i -e "s|USRVOL_UUID_PLACEHOLDER|${USRVOL_UUID}|" /etc/crypttab
+  sed -i -e "s/USRVOL_UUID_PLACEHOLDER/${USRVOL_UUID}/" /etc/crypttab
 
   # Create swapfile
   echo "Creating 8GB swapfile..."

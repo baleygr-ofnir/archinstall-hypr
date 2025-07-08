@@ -3,7 +3,7 @@
 set -e
 INSTALL_DIR="/tmp/archinstall"
 
-pacman -Sy --noconfirm git
+pacman -Sy --needed --noconfirm git
 git clone https://github.com/baleygr-ofnir/archinstall.git "$INSTALL_DIR"
 
 # Make scripts executable
