@@ -54,10 +54,8 @@ confirm() {
 
 # Install modern TUI tools if available
 install_tui_tools() {
-  if command -v pacman &> /dev/null && confirm "Install modern interface tools (gum, fzf) for better experience?"; then
-    echo "Installing TUI tools..."
-    pacman -Sy --noconfirm gum fzf 2>/dev/null || echo "Failed to install TUI tools, using fallbacks"
-  fi
+  echo "Installing TUI tools..."
+  pacman -Sy --noconfirm gum fzf 2>/dev/null || echo "Failed to install TUI tools, using fallbacks"
 }
 
 # Hostname validation function
