@@ -23,8 +23,9 @@ configure_system() {
   rm /mnt/configure_system.sh
   cp "${SCRIPT_DIR}/lib/post_install.sh" "/mnt/home/${USERNAME}/"
   cp -r "${SCRIPT_DIR}/lib/.local" "/mnt/home/${USERNAME}/"
-  chown -R 1000:1000 "/mnt/home/${USERNAME}/{.local,post_install.sh}"
+  arch-chroot /mnt chown -R 1000:1000 "/home/${USERNAME}/{.local,post_install.sh}"
   echo "bash /home/${USERNAME}/post_install.sh" >> "/mnt/home/${USERNAME}/.zlogin"
+  arch-chroot /mnt chown -R 1000:1000 "/home/${USERNAME}/.zlogin"
 }
 
 # Create configuration script for chroot environment
@@ -171,12 +172,6 @@ create_chroot_script() {
     systemctl enable bluetooth
   fi
 
-  if [ ! -d /home/USERNAME_PLACEHOLDER ]; then
-    cp -r /etc/skel /home/USERNAME_PLACEHOLDER
-    chown -R USERNAME_PLACEHOLDER:USERNAME_PLACEHOLDER /home/USERNAME_PLACEHOLDER
-    chmod 755 /home/USERNAME_PLACEHOLDER
-  fi
-
   # Paru install
   echo "\n\n    ---Installing paru - rust-based AUR helper (User password required) ---\n\n"
   git clone https://aur.archlinux.org/paru.git /tmp/paru
@@ -205,7 +200,7 @@ EOF
   sed -i -e "s|TIMEZONE_PLACEHOLDER|$TIMEZONE|g" /mnt/configure_system.sh
   sed -i -e "s|SYSVOL_PART_PLACEHOLDER|$SYSVOL_PART|g" /mnt/configure_system.sh
   #sed -i -e "s|USRVOL_PART_PLACEHOLDER|$USRVOL_PART|g" /mnt/configure_system.sh
-sleep 10
+  sleep 10
   chmod +x /mnt/configure_system.sh
   cp -r "${SCRIPT_DIR}/conf/boot" /mnt
   chown -R 0:0 /mnt/boot/loader
