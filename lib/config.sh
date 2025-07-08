@@ -63,7 +63,7 @@ get_username() {
   while true; do
     if command -v gum &> /dev/null; then
       USERNAME=$(gum input --placeholder "(e.g. archuser: lowercase, numbers, underscore, hyphen)" --prompt "Enter username: ")
-      USERNAME=$(echo "$USERNAME" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+      USERNAME=$(echo "$USERNAME" | tr -cd '[:print:]' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     elif command -v dialog &> /dev/null; then
       USERNAME=$(dialog --title "User Configuration" --inputbox "Enter username:" 8 40 3>&1 1>&2 2>&3)
       USERNAME=$(echo "$USERNAME" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')

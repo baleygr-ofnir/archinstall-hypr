@@ -23,7 +23,7 @@ configure_system() {
   rm /mnt/configure_system.sh
   cp "${SCRIPT_DIR}/lib/post_install.sh" "/mnt/home/${USERNAME}/"
   cp -r "${SCRIPT_DIR}/lib/.local" "/mnt/home/${USERNAME}/"
-  chown -R "${USERNAME}:${USERNAME}" "/mnt/${USERNAME}/{.local,post_install.sh}"
+  chown -R "$USERNAME" "/mnt/${USERNAME}/{.local,post_install.sh}"
   echo "bash /home/${USERNAME}/post_install.sh" >> "/mnt/${USERNAME}/.zlogin"
 }
 
@@ -71,7 +71,7 @@ create_chroot_script() {
 
   # User configuration
   echo "Creating user USERNAME_PLACEHOLDER..."
-  useradd -m -G realtime,storage,wheel -s /bin/zsh USERNAME_PLACEHOLDER
+  useradd -m -G realtime,storage,wheel -s /bin/zsh "USERNAME_PLACEHOLDER"
   echo 'USERNAME_PLACEHOLDER:USER_PASSWORD_PLACEHOLDER' | chpasswd -c SHA512
 
   # Root configuration
@@ -203,19 +203,19 @@ create_chroot_script() {
   mkinitcpio -P
 EOF
   # Replace placeholders
-  sed -i "s/USERNAME_PLACEHOLDER/${USERNAME}/g" /mnt/configure_system.sh
-  sed -i "s/USER_PASSWORD_PLACEHOLDER/${USER_PASSWORD}/g" /mnt/configure_system.sh
-  sed -i "s/ROOT_PASSWORD_PLACEHOLDER/${ROOT_PASSWORD}/g" /mnt/configure_system.sh
-  sed -i "s|TIMEZONE_PLACEHOLDER|${TIMEZONE}|g" /mnt/configure_system.sh
-  sed -i "s|SYSVOL_PART_PLACEHOLDER|${SYSVOL_PART}|g" /mnt/configure_system.sh
-  sed -i "s|USRVOL_PART_PLACEHOLDER|${USRVOL_PART}|g" /mnt/configure_system.sh
+  sed -i "s/USERNAME_PLACEHOLDER/$USERNAME/g" /mnt/configure_system.sh
+  sed -i "s/USER_PASSWORD_PLACEHOLDER/$USER_PASSWORD/g" /mnt/configure_system.sh
+  sed -i "s/ROOT_PASSWORD_PLACEHOLDER/$ROOT_PASSWORD/g" /mnt/configure_system.sh
+  sed -i "s|TIMEZONE_PLACEHOLDER|$TIMEZONE|g" /mnt/configure_system.sh
+  sed -i "s|SYSVOL_PART_PLACEHOLDER|$SYSVOL_PART|g" /mnt/configure_system.sh
+  sed -i "s|USRVOL_PART_PLACEHOLDER|$USRVOL_PART|g" /mnt/configure_system.sh
   chmod +x /mnt/configure_system.sh
   cp -r "${SCRIPT_DIR}/conf/boot" /mnt
   chown -R 0:0 /mnt/boot/loader
   cp -r "${SCRIPT_DIR}/conf/etc" /mnt
   chown -R 0:0 /mnt/etc/{crypttab,mkinitcpio.conf,hosts,vconsole.conf}
-  sed -i -e "s/HOSTNAME_PLACEHOLDER/${HOSTNAME}/g" \
-    -e "s/LANDOMAIN_PLACEHOLDER/${LANDOMAIN}/g" \
-    -e "s/DOMAINSUFFIX_PLACEHOLDER/${DOMAINSUFFIX}/g" /mnt/etc/hosts
-  echo "${HOSTNAME}" > /mnt/etc/hostname
+  sed -i -e "s/HOSTNAME_PLACEHOLDER/$HOSTNAME/g" \
+    -e "s/LANDOMAIN_PLACEHOLDER/$LANDOMAIN/g" \
+    -e "s/DOMAINSUFFIX_PLACEHOLDER/$DOMAINSUFFIX/g" /mnt/etc/hosts
+  echo "$HOSTNAME" > /mnt/etc/hostname
 }
