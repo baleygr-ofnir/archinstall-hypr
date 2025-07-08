@@ -127,22 +127,13 @@ create_chroot_script() {
 
   # Get UUIDs
   ROOT_UUID=$(blkid -s UUID -o value SYSVOL_PART_PLACEHOLDER)
-  USRVOL_UUID=$(blkid -s UUID -o value USRVOL_PART_PLACEHOLDER)
 
-  echo "USRVOL_PART_PLACEHOLDER"
-  echo "$USRVOL_UUID"
-
-  read -p "Press any key to continue..." -n1 -s
-
-  # Install and configure systemd-boot
+# Install and configure systemd-boot
   echo "Installing systemd-boot..."
   bootctl install
 
   # Configure systemd-boot
   sed -i -e "s/SYSVOL_UUID_PLACEHOLDER/${ROOT_UUID}/" /boot/loader/entries/arch.conf
-  
-  # Configure encrypted device
-  sed -i -e "s/USRVOL_UUID_PLACEHOLDER/${USRVOL_UUID}/" /etc/crypttab
 
   # Create swapfile
   echo "Creating 8GB swapfile..."
@@ -208,17 +199,19 @@ create_chroot_script() {
   mkinitcpio -P
 EOF
   # Replace placeholders
-  sed -i "s/USERNAME_PLACEHOLDER/$USERNAME/g" /mnt/configure_system.sh
-  sed -i "s/USER_PASSWORD_PLACEHOLDER/$USER_PASSWORD/g" /mnt/configure_system.sh
-  sed -i "s/ROOT_PASSWORD_PLACEHOLDER/$ROOT_PASSWORD/g" /mnt/configure_system.sh
-  sed -i "s|TIMEZONE_PLACEHOLDER|$TIMEZONE|g" /mnt/configure_system.sh
-  sed -i "s|SYSVOL_PART_PLACEHOLDER|$SYSVOL_PART|g" /mnt/configure_system.sh
-  sed -i "s|USRVOL_PART_PLACEHOLDER|$USRVOL_PART|g" /mnt/configure_system.sh
+  sed -i -e "s/USERNAME_PLACEHOLDER/$USERNAME/g" /mnt/configure_system.sh
+  sed -i -e "s/USER_PASSWORD_PLACEHOLDER/$USER_PASSWORD/g" /mnt/configure_system.sh
+  sed -i -e "s/ROOT_PASSWORD_PLACEHOLDER/$ROOT_PASSWORD/g" /mnt/configure_system.sh
+  sed -i -e "s|TIMEZONE_PLACEHOLDER|$TIMEZONE|g" /mnt/configure_system.sh
+  sed -i -e "s|SYSVOL_PART_PLACEHOLDER|$SYSVOL_PART|g" /mnt/configure_system.sh
+  #sed -i -e "s|USRVOL_PART_PLACEHOLDER|$USRVOL_PART|g" /mnt/configure_system.sh
+sleep 10
   chmod +x /mnt/configure_system.sh
   cp -r "${SCRIPT_DIR}/conf/boot" /mnt
   chown -R 0:0 /mnt/boot/loader
   cp -r "${SCRIPT_DIR}/conf/etc" /mnt
   chown -R 0:0 /mnt/etc/{crypttab,mkinitcpio.conf,hosts,vconsole.conf}
+  sed -i -e "s/USRVOL_UUID_PLACEHOLDER/$(blkid -s UUID -o value $USRVOL_PART)/" "/mnt/etc/crypttab"
   sed -i -e "s/HOSTNAME_PLACEHOLDER/$HOSTNAME/g" \
     -e "s/LANDOMAIN_PLACEHOLDER/$LANDOMAIN/g" \
     -e "s/DOMAINSUFFIX_PLACEHOLDER/$DOMAINSUFFIX/g" /mnt/etc/hosts
