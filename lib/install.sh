@@ -179,12 +179,21 @@ create_chroot_script() {
     systemctl enable bluetooth
   fi
 
+  rustup install stable
+  sleep 2
+
+  if [ ! -d /home/USERNAME_PLACEHOLDER ]; then
+    cp -r /etc/skel /home/USERNAME_PLACEHOLDER
+    chown -R USERNAME_PLACEHOLDER:USERNAME_PLACEHOLDER /home/USERNAME_PLACEHOLDER
+    chmod 755 /home/USERNAME_PLACEHOLDER
+  fi
+
   # Paru install
   echo "\n\n    ---Installing paru - rust-based AUR helper (User password required) ---\n\n"
   git clone https://aur.archlinux.org/paru.git /tmp/paru
   chown -R USERNAME_PLACEHOLDER /tmp/paru
   cd /tmp/paru
-  sudo -u USERNAME_PLACEHOLDER makepkg -si
+  sudo -u USERNAME_PLACEHOLDER makepkg -si --noconfirm
   cd
   sleep 2
 
