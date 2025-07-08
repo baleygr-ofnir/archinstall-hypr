@@ -1,7 +1,10 @@
 #!/bin/bash
 # setup.sh - Setup and run the modular Arch Linux installation
 set -e
-INSTALL_DIR="${PWD}"
+INSTALL_DIR="/tmp/archinstall"
+
+pacman -Sy --noconfirm git
+git clone https://github.com/baleygr-ofnir/archinstall.git "$INSTALL_DIR"
 
 # Make scripts executable
 set_permissions() {
