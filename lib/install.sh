@@ -175,9 +175,6 @@ create_chroot_script() {
     systemctl enable bluetooth
   fi
 
-  rustup install stable
-  sleep 2
-
   if [ ! -d /home/USERNAME_PLACEHOLDER ]; then
     cp -r /etc/skel /home/USERNAME_PLACEHOLDER
     chown -R USERNAME_PLACEHOLDER:USERNAME_PLACEHOLDER /home/USERNAME_PLACEHOLDER
