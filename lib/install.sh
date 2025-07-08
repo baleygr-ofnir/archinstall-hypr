@@ -151,7 +151,7 @@ create_chroot_script() {
   # Paru install
   echo "Installing paru - rust-based AUR helper"
   git clone https://aur.archlinux.org/paru.git /tmp/paru
-  chown -r nobody /tmp/paru
+  chown -R nobody /tmp/paru
   cd /tmp/paru
   sudo -u nobody makepkg -s
   cd
@@ -160,8 +160,12 @@ create_chroot_script() {
 
   # Configure Plymouth theme
   echo "Setting Monoarch Plymouth theme..."
+  git clone https://aur.archlinux.org/plymouth-theme-monoarch.git /tmp/plymouth-theme-monoarch
+  chown -R nobody /tmp/plymouth-theme-monoarch
+  cd /tmp/plymouth-theme-monoarch
+  sudo -u nobody makepkg -s
   cd
-  sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm plymouth-theme-monoarch
+  pacman -U --noconfirm "/tmp/plymouth-theme-monoarch/"*.pkg.tar.zst
   plymouth-set-default-theme -R monoarch
 
   # Enable NetworkManager
