@@ -48,10 +48,13 @@ setup_partitions() {
 setup_encryption() {
   echo "Setting up LUKS encryption for user volume..."
 
-  echo "$LUKS_PASSWORD" | hexdump -C
+  hexdump -C <<< "$LUKS_PASSWORD"
+  
+  sleep 5
+
+  cryptsetup luksFormat --batch-mode "$USRVOL_PART" <<< "$LUKS_PASSWORD"
   sleep 2
-  echo "$LUKS_PASSWORD" | cryptsetup luksFormat --batch-mode "$USRVOL_PART"
-  echo "$LUKS_PASSWORD" | cryptsetup open "$USRVOL_PART" usrvol
+  cryptsetup open "$USRVOL_PART" usrvol <<< "$LUKS_PASSWORD"
 }
 
 # Create btrfs filesystems
