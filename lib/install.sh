@@ -126,16 +126,10 @@ create_chroot_script() {
   cd
   rm -rf /tmp/en_se
 
-  # Get UUIDs
-  ROOT_UUID=$(blkid -s UUID -o value SYSVOL_PART_PLACEHOLDER)
-
-# Install and configure systemd-boot
+  # Install and configure systemd-boot
   echo "Installing systemd-boot..."
   bootctl install
-
-  # Configure systemd-boot
-  sed -i -e "s/SYSVOL_UUID_PLACEHOLDER/${ROOT_UUID}/" /boot/loader/entries/arch.conf
-
+  
   # Create swapfile
   echo "Creating 8GB swapfile..."
   btrfs filesystem mkswapfile --size 8g --uuid clear /.swapvol/swapfile
@@ -159,7 +153,6 @@ create_chroot_script() {
   # Enable package cache cleanup
   echo "Enabling automatic package cache cleanup..."
   systemctl enable paccache.timer
-
 
   # Bluetooth configuration
   if gum confirm "Install bluetooth packages?"; then
@@ -185,7 +178,7 @@ create_chroot_script() {
   cd
   sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm ml4w-hyprland
   sleep 2
-  sudo -u USERNAME_PLACEHOLDER ml4w-hyprland-setup
+  sudo -u USERNAME_PLACEHOLDER ml4w-hyprland-setup -m full -p arch
 
   # Cleanup
   echo "Cleaning up package cache..."
@@ -198,15 +191,15 @@ EOF
   sed -i -e "s/USER_PASSWORD_PLACEHOLDER/$USER_PASSWORD/g" /mnt/configure_system.sh
   sed -i -e "s/ROOT_PASSWORD_PLACEHOLDER/$ROOT_PASSWORD/g" /mnt/configure_system.sh
   sed -i -e "s|TIMEZONE_PLACEHOLDER|$TIMEZONE|g" /mnt/configure_system.sh
-  sed -i -e "s|SYSVOL_PART_PLACEHOLDER|$SYSVOL_PART|g" /mnt/configure_system.sh
-  #sed -i -e "s|USRVOL_PART_PLACEHOLDER|$USRVOL_PART|g" /mnt/configure_system.sh
-  sleep 10
   chmod +x /mnt/configure_system.sh
+  # Copy systemd-boot files into system and configuring
   cp -r "${SCRIPT_DIR}/conf/boot" /mnt
   chown -R 0:0 /mnt/boot/loader
+  sed -i -e "s/SYSVOL_UUID_PLACEHOLDER/$(blkid -s UUID -o value $SYSVOL_PART)/" /boot/loader/entries/arch.conf
+  sed -i -e "s/USRVOL_UUID_PLACEHOLDER/$(blkid -s UUID -o value $USRVOL_PART)/" "/mnt/etc/crypttab"
+  # Copy system conf files into system and configuring
   cp -r "${SCRIPT_DIR}/conf/etc" /mnt
   chown -R 0:0 /mnt/etc/{crypttab,mkinitcpio.conf,hosts,vconsole.conf}
-  sed -i -e "s/USRVOL_UUID_PLACEHOLDER/$(blkid -s UUID -o value $USRVOL_PART)/" "/mnt/etc/crypttab"
   sed -i -e "s/HOSTNAME_PLACEHOLDER/$HOSTNAME/g" \
     -e "s/LANDOMAIN_PLACEHOLDER/$LANDOMAIN/g" \
     -e "s/DOMAINSUFFIX_PLACEHOLDER/$DOMAINSUFFIX/g" /mnt/etc/hosts
