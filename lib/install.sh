@@ -138,8 +138,8 @@ create_chroot_script() {
 
   # Configure systemd-boot
   sed -i -e "s|SYSVOL_UUID_PLACEHOLDER|${ROOT_UUID}|" /boot/loader/entries/arch.conf
-    
-  cp "SCRIPT_DIR"/conf/crypttab /etc/crypttab
+  
+  # Configure encrypted device
   sed -i -e "s|USRVOL_UUID_PLACEHOLDER|${USRVOL_UUID}|" /etc/crypttab
 
   # Create swapfile
