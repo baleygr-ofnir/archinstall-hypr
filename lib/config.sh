@@ -162,23 +162,17 @@ get_luks_password() {
   while true; do
     if command -v gum &> /dev/null; then
       LUKS_PASSWORD=$(gum input --password --placeholder "(minimum 8 characters)" --prompt "Enter LUKS encryption password: ")
-      LUKS_PASSWORD=$(echo "$LUKS_PASSWORD" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
       # shellcheck disable=SC2155
       local confirm_password=$(gum input --password --prompt "Confirm LUKS encryption password: ")
-      confirm_password=$(echo "$confirm_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
     elif command -v dialog &> /dev/null; then
       LUKS_PASSWORD=$(dialog --title "Disk Encryption" --passwordbox "Enter LUKS encryption password:" 8 40 3>&1 1>&2 2>&3)
-      LUKS_PASSWORD=$(echo "$LUKS_PASSWORD" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
       # shellcheck disable=SC2155
       local confirm_password=$(dialog --title "Disk Encryption" --passwordbox "Confirm LUKS password:" 8 40 3>&1 1>&2 2>&3)
-      confirm_password=$(echo "$confirm_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
     else
       # shellcheck disable=SC2162
       read -s -p "Enter LUKS encryption password: " LUKS_PASSWORD
-      LUKS_PASSWORD=$(echo "$LUKS_PASSWORD" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
       # shellcheck disable=SC2162
       read -s -p "Confirm LUKS password: " confirm_password
-      confirm_password=$(echo "$confirm_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
     fi
 
     if [[ "$LUKS_PASSWORD" == "$confirm_password" ]] && [[ ${#LUKS_PASSWORD} -ge 8 ]]; then
