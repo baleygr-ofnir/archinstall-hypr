@@ -23,7 +23,7 @@ configure_system() {
   rm /mnt/configure_system.sh
   cp "${SCRIPT_DIR}/lib/post_install.sh" "/mnt/home/${USERNAME}/"
   cp -r "${SCRIPT_DIR}/lib/.local" "/mnt/home/${USERNAME}/"
-  chown -R "$USERNAME" "/mnt/home/${USERNAME}/{.local,post_install.sh}"
+  chown -R 1000:1000 "/mnt/home/${USERNAME}/{.local,post_install.sh}"
   echo "bash /home/${USERNAME}/post_install.sh" >> "/mnt/home/${USERNAME}/.zlogin"
 }
 
