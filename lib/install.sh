@@ -148,16 +148,6 @@ create_chroot_script() {
   swapon /.swapvol/swapfile
   echo "/.swapvol/swapfile none swap defaults 0 0" >> /etc/fstab
 
-  # Paru install
-  echo "Installing paru - rust-based AUR helper"
-  git clone https://aur.archlinux.org/paru.git /tmp/paru
-  chown -R nobody /tmp/paru
-  cd /tmp/paru
-  sudo -u nobody makepkg -s
-  cd
-  pacman -U --noconfirm /tmp/paru/paru-*.pkg.tar.zst
-  sleep 2
-
   # Configure Plymouth theme
   echo "Setting Monoarch Plymouth theme..."
   git clone https://aur.archlinux.org/plymouth-theme-monoarch.git /tmp/plymouth-theme-monoarch
@@ -179,6 +169,15 @@ create_chroot_script() {
   # Enable bluetooth at start
   systemctl enable bluetooth
 
+  # Paru install
+  echo "\n\n    ---Installing paru - rust-based AUR helper (User password required) ---\n\n"
+  git clone https://aur.archlinux.org/paru.git /tmp/paru
+  chown -R nobody /tmp/paru
+  cd /tmp/paru
+  sudo -u USERNAME_PLACEHOLDER makepkg -si
+  cd
+  sleep 2
+
   echo "Installing ML4W Hyprland..."
   cd
   sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm ml4w-hyprland
@@ -187,7 +186,7 @@ create_chroot_script() {
 
   # Cleanup
   echo "Cleaning up package cache..."
-  sudo -u nobody paru -Scc --noconfirm
+  sudo -u USERNAME_PLACEHOLDER paru -Scc --noconfirm
   # Rebuild initramfs
   mkinitcpio -P
 EOF
