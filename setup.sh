@@ -7,7 +7,6 @@ INSTALL_DIR="${PWD}"
 set_permissions() {
   chmod +x "$INSTALL_DIR/main.sh"
   chmod +x "$INSTALL_DIR/lib/"*.sh
-  chown -R 0:0 "$INSTALL_DIR/conf"
 }
 
 # Run the installation

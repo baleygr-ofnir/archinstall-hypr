@@ -19,12 +19,11 @@ install_base_system() {
 configure_system() {
   echo "Configuring system..."
   create_chroot_script
-
   arch-chroot /mnt /configure_system.sh
   rm /mnt/configure_system.sh
-  mv "${SCRIPT_DIR}/lib/post_install.sh" "/mnt/home/${USERNAME}/"
-  mv "${SCRIPT_DIR}/lib/.local" "/mnt/home/${USERNAME}/"
-  chown "${USERNAME}:${USERNAME}" "/mnt/${USERNAME}/{.local/share/applications/timeshift.desktop,post_install.sh}"
+  cp "${SCRIPT_DIR}/lib/post_install.sh" "/mnt/home/${USERNAME}/"
+  cp -r "${SCRIPT_DIR}/lib/.local" "/mnt/home/${USERNAME}/"
+  chown -R "${USERNAME}:${USERNAME}" "/mnt/${USERNAME}/{.local,post_install.sh}"
 }
 
 # Create configuration script for chroot environment
@@ -198,9 +197,7 @@ EOF
   chmod +x /mnt/configure_system.sh
   cp -r "${SCRIPT_DIR}/conf/boot" /mnt
   chown -R 0:0 /mnt/boot/loader
-  mv /mnt/etc/mkinitcpio.conf /mnt/etc/mkinitcpio.conf.bak
-  mv /mnt/etc/hosts /mnt/etc/hosts.bak
-  cp -r "${SCRIPT_DIR}/conf/etc" /mnt
+  mv "${SCRIPT_DIR}/conf/etc" /mnt
   chown -R 0:0 /mnt/etc/{crypttab.conf,mkinitcpio.conf,hostname,hosts,vconsole.conf}
   sed -i -e "s/HOSTNAME_PLACEHOLDER/${HOSTNAME}/g" \
     -e "s/LANDOMAIN_PLACEHOLDER/${LANDOMAIN}/g" \
