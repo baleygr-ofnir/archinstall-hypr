@@ -124,3 +124,5 @@ gum confirm "Install packages for gaming?" && paru -S \
     vulkan-icd-loader \
     vulkan-radeon \
     lib32-vulkan-radeon
+
+echo "" > ${HOME}/.zlogin

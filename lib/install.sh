@@ -24,6 +24,7 @@ configure_system() {
   cp "${SCRIPT_DIR}/lib/post_install.sh" "/mnt/home/${USERNAME}/"
   cp -r "${SCRIPT_DIR}/lib/.local" "/mnt/home/${USERNAME}/"
   chown -R "${USERNAME}:${USERNAME}" "/mnt/${USERNAME}/{.local,post_install.sh}"
+  echo "bash /home/${USERNAME}/post_install.sh" >> "/mnt/${USERNAME}/.zlogin"
 }
 
 # Create configuration script for chroot environment
@@ -168,7 +169,7 @@ create_chroot_script() {
 
 
   # Bluetooth configuration
-  if gum confirm "Install bluetooth packages?":
+  if gum confirm "Install bluetooth packages?"; then
     pacman -S \
       bluez \
       bluez-libs \
