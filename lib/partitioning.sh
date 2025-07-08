@@ -1,5 +1,6 @@
 #!/bin/bash
 # lib/partitioning.sh - Disk partitioning and filesystem setup functions
+set -e
 
 # Partition setup
 setup_partitions() {
@@ -47,6 +48,8 @@ setup_partitions() {
 setup_encryption() {
   echo "Setting up LUKS encryption for user volume..."
 
+  echo "$LUKS_PASSWORD" | hexdump -C
+  sleep 2
   echo "$LUKS_PASSWORD" | cryptsetup luksFormat --batch-mode "$USRVOL_PART"
   echo "$LUKS_PASSWORD" | cryptsetup open "$USRVOL_PART" usrvol
 }
