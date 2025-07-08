@@ -23,8 +23,8 @@ configure_system() {
   rm /mnt/configure_system.sh
   cp "${SCRIPT_DIR}/lib/post_install.sh" "/mnt/home/${USERNAME}/"
   cp -r "${SCRIPT_DIR}/lib/.local" "/mnt/home/${USERNAME}/"
-  chown -R "$USERNAME" "/mnt/${USERNAME}/{.local,post_install.sh}"
-  echo "bash /home/${USERNAME}/post_install.sh" >> "/mnt/${USERNAME}/.zlogin"
+  chown -R "$USERNAME" "/mnt/home/${USERNAME}/{.local,post_install.sh}"
+  echo "bash /home/${USERNAME}/post_install.sh" >> "/mnt/home/${USERNAME}/.zlogin"
 }
 
 # Create configuration script for chroot environment
