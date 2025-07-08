@@ -102,7 +102,7 @@ create_chroot_script() {
   chown -R nobody /tmp/en_se
   cd /tmp/en_se
   sudo -u nobody makepkg -s
-  sleep 2
+  cd
   if pacman -U --noconfirm "/tmp/en_se/en_se-"*.pkg.tar.zst; then
     echo "Installed en_SE locale from AUR"
     sleep 2
