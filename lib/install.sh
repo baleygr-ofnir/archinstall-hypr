@@ -166,8 +166,14 @@ create_chroot_script() {
   echo "Enabling automatic package cache cleanup..."
   systemctl enable paccache.timer
 
-  # Enable bluetooth at start
-  systemctl enable bluetooth
+  gum confirm "Install bluetooth packages?" && pacman -S \
+    bluez \
+    bluez-libs \
+    bluez-utils \
+    bluetoothctl \
+    blueman
+
+  gum confirm "Enable bluetooth service at start?" && systemctl enable bluetooth
 
   # Paru install
   echo "\n\n    ---Installing paru - rust-based AUR helper (User password required) ---\n\n"
