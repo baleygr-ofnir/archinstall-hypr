@@ -198,7 +198,7 @@ EOF
   cp -r "${SCRIPT_DIR}/conf/boot" /mnt
   chown -R 0:0 /mnt/boot/loader
   cp -r "${SCRIPT_DIR}/conf/etc" /mnt
-  chown -R 0:0 /mnt/etc/{crypttab.conf,mkinitcpio.conf,hostname,hosts,vconsole.conf}
+  chown -R 0:0 /mnt/etc/{crypttab,mkinitcpio.conf,hosts,vconsole.conf}
   sed -i -e "s/HOSTNAME_PLACEHOLDER/${HOSTNAME}/g" \
     -e "s/LANDOMAIN_PLACEHOLDER/${LANDOMAIN}/g" \
     -e "s/DOMAINSUFFIX_PLACEHOLDER/${DOMAINSUFFIX}/g" /mnt/etc/hosts
