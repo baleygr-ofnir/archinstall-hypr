@@ -166,19 +166,22 @@ create_chroot_script() {
   echo "Enabling automatic package cache cleanup..."
   systemctl enable paccache.timer
 
-  gum confirm "Install bluetooth packages?" && pacman -S \
-    bluez \
-    bluez-libs \
-    bluez-utils \
-    bluetoothctl \
-    blueman
 
-  gum confirm "Enable bluetooth service at start?" && systemctl enable bluetooth
+  # Bluetooth configuration
+  if gum confirm "Install bluetooth packages?":
+    pacman -S \
+      bluez \
+      bluez-libs \
+      bluez-utils \
+      bluetoothctl \
+      blueman
+    systemctl enable bluetooth
+  fi
 
   # Paru install
   echo "\n\n    ---Installing paru - rust-based AUR helper (User password required) ---\n\n"
   git clone https://aur.archlinux.org/paru.git /tmp/paru
-  chown -R nobody /tmp/paru
+  chown -R USERNAME_PLACEHOLDER /tmp/paru
   cd /tmp/paru
   sudo -u USERNAME_PLACEHOLDER makepkg -si
   cd
