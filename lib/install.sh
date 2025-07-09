@@ -146,7 +146,6 @@ create_chroot_script() {
   sudo -u nobody makepkg -s
   cd
   pacman -U --noconfirm "/tmp/plymouth-theme-monoarch/"*.pkg.tar.zst
-  plymouth-set-default-theme -R monoarch
 
   # Enable NetworkManager
   systemctl enable NetworkManager
@@ -188,7 +187,7 @@ create_chroot_script() {
   echo "Cleaning up package cache..."
   sudo -u USERNAME_PLACEHOLDER paru -Scc --noconfirm
   # Rebuild initramfs
-  mkinitcpio -P
+  plymouth-set-default-theme -R monoarch
 EOF
   
   # Replace chroot script placeholders
