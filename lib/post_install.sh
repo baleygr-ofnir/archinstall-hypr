@@ -36,7 +36,6 @@ paru -Syu --needed --noconfirm \
     zapzap \
     mpv \
     oh-my-zsh-git \
-    oh-my-posh-bin \
     p7zip \
     rsync \
     zoxide \

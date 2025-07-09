@@ -79,11 +79,8 @@ perform_installation() {
 cleanup_and_finish() {
   sleep 5
   echo "Installation complete!"
-  echo "Unmounting filesystems..."
+  echo "Installing ML4W Hyprland user configuration and rebooting."
   arch-chroot /mnt sudo -u $USERNAME ml4w-hyprland-setup -m dotfiles -p arch
-
-  echo "You can now reboot into your new Arch Linux system!"
-  echo "The encrypted partition will require your passphrase at boot."
 }
 
 # Run main function

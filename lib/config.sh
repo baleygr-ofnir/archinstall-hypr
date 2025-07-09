@@ -16,7 +16,7 @@ setup_interactive_config() {
   select_target_disk
 
   echo "Configuration complete:"
-  echo "  Hostname: $HOSTNAME"
+  echo "  Hostname: $HOSTNAME$LANDOMAIN.$DOMAINSUFFIX"
   echo "  Username: $USERNAME"
   echo "  Timezone: $TIMEZONE"
   echo "  Target disk: $DISK"
