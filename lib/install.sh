@@ -22,10 +22,11 @@ configure_system() {
   arch-chroot /mnt /configure_system.sh
   rm /mnt/configure_system.sh
   cp "${SCRIPT_DIR}/lib/post_install.sh" "/mnt/home/${USERNAME}/"
+  arch-chroot /mnt chown "$USERNAME":"$USERNAME" "/home/${USERNAME}/post_install.sh"
   cp -r "${SCRIPT_DIR}/lib/.local" "/mnt/home/${USERNAME}/"
-  arch-chroot /mnt chown -R 1000:1000 "/home/${USERNAME}/{.local,post_install.sh}"
+  arch-chroot /mnt chown -R "$USERNAME":"$USERNAME" "/home/${USERNAME}/.local/"
   echo "bash /home/${USERNAME}/post_install.sh" >> "/mnt/home/${USERNAME}/.zlogin"
-  arch-chroot /mnt chown -R 1000:1000 "/home/${USERNAME}/.zlogin"
+  arch-chroot /mnt chown "$USERNAME":"$USERNAME" "/home/${USERNAME}/.zlogin"
 }
 
 # Create configuration script for chroot environment
