@@ -43,16 +43,16 @@ paru -Syu --needed --noconfirm \
 
 systemctl --user enable --now pipewire.service pipewire-pulse.service wireplumber.service
 
-gum confirm "Install OnlyOffice desktop editors?" && paru -S onlyoffice-bin
+gum confirm "Install OnlyOffice desktop editors?" && paru -S --noconfirm onlyoffice-bin
 
-gum confirm "Install development tools?" && paru -S \
+gum confirm "Install development tools?" && paru -S --noconfirm \
     code \
     drawio-desktop-bin \
     jdk-temurin \
     jetbrains-toolkit \
 
 # KVM
-gum confirm "Install packages for KVM/QEMU with virt-manager?" && paru -S \
+gum confirm "Install packages for KVM/QEMU with virt-manager?" && paru -S --noconfirm \
     virt-manager \
     libvirt \
     libvirt-dbus \
@@ -104,7 +104,7 @@ gum confirm "Install packages for KVM/QEMU with virt-manager?" && paru -S \
     sudo systemctl enable --now libvirtd.service libvirtd.socket
 
 # Gaming
-gum confirm "Install packages for gaming?" && paru -S \
+gum confirm "Install packages for gaming?" && paru -S --noconfirm \
     steam \
     lutris \
     heroic-games-launcher-bin \
@@ -125,3 +125,5 @@ gum confirm "Install packages for gaming?" && paru -S \
     lib32-vulkan-radeon
 
 echo "" > ${HOME}/.zlogin
+
+gum confirm "Reboot recommended, continue?" && systemctl reboot

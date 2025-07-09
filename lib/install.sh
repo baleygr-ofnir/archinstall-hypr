@@ -25,7 +25,7 @@ configure_system() {
   arch-chroot /mnt chown "$USERNAME":"$USERNAME" "/home/${USERNAME}/post_install.sh"
   cp -r "${SCRIPT_DIR}/lib/.local" "/mnt/home/${USERNAME}/"
   arch-chroot /mnt chown -R "$USERNAME":"$USERNAME" "/home/${USERNAME}/.local/"
-  echo "kitty bash /home/${USERNAME}/post_install.sh" >> "/mnt/home/${USERNAME}/.zlogin"
+  echo "hyprctl dispatch exec kitty bash /home/${USERNAME}/post_install.sh" >> "/mnt/home/${USERNAME}/.zlogin"
   arch-chroot /mnt chown "$USERNAME":"$USERNAME" "/home/${USERNAME}/.zlogin"
 }
 
