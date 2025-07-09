@@ -120,7 +120,7 @@ if [ ! -d ${HOME}/.oh-my-zsh ]; then
     mkdir -p ${HOME}/.oh-my-zsh/custom
 fi
 
-cat<<'ZSH_EOF' >> ${HOME}/.oh-my-zsh/custom/environment.zsh
+cat<<'ZSH_EOF' > ${HOME}/.oh-my-zsh/custom/environment.zsh
 export TERM=xterm-256color
 
 autoload -U select-word-style
