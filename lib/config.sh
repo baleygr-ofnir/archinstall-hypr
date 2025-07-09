@@ -126,23 +126,23 @@ get_root_password() {
   while true; do
     if command -v gum &> /dev/null; then
       ROOT_PASSWORD="$(gum input --password --placeholder "(minimum 6 characters)" --prompt "Enter secure root password: ")"
-      ROOT_PASSWORD=$(echo "$ROOT_PASSWORD" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
+      ROOT_PASSWORD=$(echo "$ROOT_PASSWORD" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
       # shellcheck disable=SC2155
       local confirm_root_password="$(gum input --password --prompt "Confirm root password: ")"
-      confirm_root_password=$(echo "$confirm_root_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
+      confirm_root_password=$(echo "$confirm_root_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     elif command -v dialog &> /dev/null; then
       ROOT_PASSWORD="$(dialog --title "User Configuration" --passwordbox "Enter secure root password:" 8 40 3>&1 1>&2 2>&3)"
-      ROOT_PASSWORD=$(echo "$ROOT_PASSWORD" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
+      ROOT_PASSWORD=$(echo "$ROOT_PASSWORD" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
       # shellcheck disable=SC2155
       local confirm_root_password="$(dialog --title "Root Configuration" --passwordbox "Confirm root password:" 8 40 3>&1 1>&2 2>&3)"
-      confirm_root_password=$(echo "$confirm_root_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
+      confirm_root_password=$(echo "$confirm_root_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     else
       # shellcheck disable=SC2162
       read -s -p "Enter secure root password: " ROOT_PASSWORD
       ROOT_PASSWORD=$(echo "$ROOT_PASSWORD" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
       # shellcheck disable=SC2162
       read -s -p "Confirm root password: " confirm_root_password
-      confirm_root_password=$(echo "$confirm_root_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '%')
+      confirm_root_password=$(echo "$confirm_root_password" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     fi
 
     if [[ $ROOT_PASSWORD == "$confirm_root_password" ]] && [[ ${#ROOT_PASSWORD} -ge 6 ]]; then
