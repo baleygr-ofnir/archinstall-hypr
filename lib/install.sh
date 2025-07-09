@@ -178,7 +178,7 @@ create_chroot_script() {
   cd
   sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm ml4w-hyprland
   sleep 2
-  sudo -u USERNAME_PLACEHOLDER ml4w-hyprland-setup -m full -p arch
+  sudo -u USERNAME_PLACEHOLDER ml4w-hyprland-setup -m packages -p arch
 
   # Cleanup
   echo "Cleaning up package cache..."

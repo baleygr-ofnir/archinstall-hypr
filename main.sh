@@ -80,7 +80,7 @@ cleanup_and_finish() {
   sleep 5
   echo "Installation complete!"
   echo "Unmounting filesystems..."
-  umount -R /mnt 2>/dev/null || true
+  arch-chroot /mnt sudo -u $USERNAME ml4w-hyprland-setup -m dotfiles -p arch
 
   echo "You can now reboot into your new Arch Linux system!"
   echo "The encrypted partition will require your passphrase at boot."
