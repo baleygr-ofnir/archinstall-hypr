@@ -25,8 +25,7 @@ configure_system() {
   arch-chroot /mnt chown "$USERNAME":"$USERNAME" "/home/${USERNAME}/post_install.sh"
   cp -r "${SCRIPT_DIR}/lib/.local" "/mnt/home/${USERNAME}/"
   arch-chroot /mnt chown -R "$USERNAME":"$USERNAME" "/home/${USERNAME}/.local/"
-  echo "hyprctl dispatch exec kitty bash /home/${USERNAME}/post_install.sh" >> "/mnt/home/${USERNAME}/.zlogin"
-  arch-chroot /mnt chown "$USERNAME":"$USERNAME" "/home/${USERNAME}/.zlogin"
+  echo "exec-once = kitty bash /home/${USERNAME}/post_install.sh" >> "/mnt/home/${USERNAME}/.config/hypr/conf"
 }
 
 # Create configuration script for chroot environment
@@ -54,6 +53,7 @@ create_chroot_script() {
     amd-ucode \
     efibootmgr \
     firewalld \
+    dolphin \
     networkmanager \
     nmap \
     neovim \
@@ -63,6 +63,7 @@ create_chroot_script() {
     gum \
     realtime-privileges \
     timeshift \
+    tmux \
     zsh \
     zsh-autocomplete \
     zsh-autosuggestions \
@@ -180,6 +181,8 @@ create_chroot_script() {
   sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm ml4w-hyprland
   sleep 2
   sudo -u USERNAME_PLACEHOLDER ml4w-hyprland-setup -m packages -p arch
+  pacman -Rsn --noconfirm firefox nautilus nautilus-python nautilus-open-any-terminal
+  pacman -S --noconfirm dolphin
 
   # Cleanup
   echo "Cleaning up package cache..."

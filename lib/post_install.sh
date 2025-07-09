@@ -15,15 +15,7 @@ paru -Syu --needed --noconfirm \
     libwireplumber \
     pavucontrol \
     sof-firmware \
-    # bluetooth 
-    bluez \
-    bluez-libs \
-    bluez-utils \
-    bluetoothctl \
-    blueman \
     libinput \
-    dolphin \
-    tmux \
     otf-font-awesome \
     ttf-liberation \
     ttf-liberation-mono-nerd \
@@ -124,6 +116,34 @@ gum confirm "Install packages for gaming?" && paru -S --noconfirm \
     vulkan-radeon \
     lib32-vulkan-radeon
 
-echo "" > ${HOME}/.zlogin
+if [ ! -d ${HOME}/.oh-my-zsh ]; then
+    mkdir -p ${HOME}/.oh-my-zsh/custom
+fi
+
+cat<<'ZSH_EOF' >> ${HOME}/.oh-my-zsh/custom/environment.zsh
+export TERM=xterm-256color
+
+autoload -U select-word-style
+select-word-style bash
+
+bindkey "^[[H" beginning-of-line
+bindkey "^[[F" end-of-line
+bindkey "^[[3~" delete-char
+bindkey "^[[3;5~" kill-word
+bindkey "^H" backward-kill-word
+bindkey "^[[1;5C" forward-word
+bindkey "^[[1;5D" backward-word
+
+PATH=$USER/.local/sh:$USER/.local/bin:$PATH
+ZSH_EOF
+
+cat<<'KITTY_EOF' > ${HOME}/.config/kitty/custom.conf
+term xterm-256color
+enable_audio_bell no
+map ctrl+delete no_op
+map ctrl+shift+delete send_text all \x1b[3;5~
+KITTY_EOF
+
+sed -i -e "s|exec-once = kitty bash ${HOME}/post_install.sh||" ${HOME}/.config/hypr/hyprland.conf
 
 gum confirm "Reboot recommended, continue?" && systemctl reboot
