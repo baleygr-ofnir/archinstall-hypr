@@ -48,7 +48,7 @@ create_chroot_script() {
     -e '/^#\?\[multilib\]/s/^#//' \
     -e '/^\[multilib\]/,+1{/^#\?Include.*mirrorlist/s/^#//}' \
     -e '/^#\?\IgnorePkg.*/s/^#//' \
-    -e 's/^IgnorePkg.*=/& firefox nautilus /' /etc/pacman.conf
+    -e 's/^IgnorePkg.*=/& firefox nautilus nautilus-python nautilus-open-any-terminal xdg-desktop-portal-gtk /' /etc/pacman.conf
   pacman -Syu --noconfirm --needed \
     amd-ucode \
     efibootmgr \
@@ -199,6 +199,7 @@ EOF
   
   # Copy systemd-boot files into system and configuring
   cp -r "${SCRIPT_DIR}/conf/boot" /mnt
+  efibootmgr --create --disk $DISK --part 1 --label "netboot.xyz" --loader /EFI/netboot.xyz/netboot.xyz.efi
   chown -R 0:0 /mnt/boot/loader
   sed -i -e "s/SYSVOL_UUID_PLACEHOLDER/$(blkid -s UUID -o value $SYSVOL_PART)/" /mnt/boot/loader/entries/arch.conf
 

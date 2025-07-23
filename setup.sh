@@ -1,14 +1,16 @@
 #!/bin/bash
 # setup.sh - Setup and run the modular Arch Linux installation
 set -e
-INSTALL_DIR="/tmp/archinstall"
+NAME="archinstall-hypr"
+SOURCE="https://github.com/baleygr-ofnir/${NAME}.git"
+INSTALL_DIR="/tmp/${NAME}"
 
 pacman -Sy --needed --noconfirm git
 
 if [ ! -d /tmp/archinstall ];then
-    git clone https://github.com/baleygr-ofnir/archinstall.git "$INSTALL_DIR"
+    git clone "$SOURCE" "$INSTALL_DIR"
 else
-    echo "Already downloaded in: /tmp/archinstall, continuing..."
+    echo "Already downloaded in: $INSTALL_DIR, continuing..."
 fi
 
 # Make scripts executable
