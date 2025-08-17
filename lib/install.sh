@@ -166,8 +166,11 @@ create_chroot_script() {
     systemctl enable bluetooth
   fi
 
+  gum confirm "Last part needs user password input atleast 3 times, continue?" && echo "Continuing..."
+
   # Paru install
-  echo "\n\n    ---Installing paru - rust-based AUR helper (User password required) ---\n\n"
+  echo "----Installing paru - rust-based AUR helper (User password required)----"
+  sleep 2
   git clone https://aur.archlinux.org/paru.git /tmp/paru
   chown -R USERNAME_PLACEHOLDER /tmp/paru
   cd /tmp/paru
@@ -175,15 +178,21 @@ create_chroot_script() {
   cd
   sleep 2
 
-  echo "Installing ML4W Hyprland..."
-  cd
-  sudo -u USERNAME_PLACEHOLDER paru -S --noconfirm ml4w-hyprland
+  # yay install
+  echo "----Installing yay - AUR helper (User password required)----"
   sleep 2
-  sudo -u USERNAME_PLACEHOLDER ml4w-hyprland-setup -m packages -p arch
-  pacman -Rsn --noconfirm firefox nautilus nautilus-python nautilus-open-any-terminal
-  pacman -S --noconfirm dolphin
+  git clone https://aur.archlinux.org/yay.git /tmp/yay
+  chown -R USERNAME_PLACEHOLDER /tmp/yay
+  cd /tmp/yay
+  sudo -u USERNAME_PLACEHOLDER makepkg -si --noconfirm
+  cd
+  sleep 2
 
-  # Cleanup
+  # end-4 hyprland dots install
+  echo "----Installing end-4 hyprland dots - AUR helper (User password required)----"
+  sudo -u USERNAME_PLACEHOLDER bash <(curl -s "https://end-4.github.io/dots-hyprland-wiki/setup.sh")
+
+# Cleanup
   echo "Cleaning up package cache..."
   sudo -u USERNAME_PLACEHOLDER paru -Scc --noconfirm
   # Rebuild initramfs
