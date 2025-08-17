@@ -161,7 +161,6 @@ create_chroot_script() {
       bluez \
       bluez-libs \
       bluez-utils \
-      bluetoothctl \
       blueman
     systemctl enable bluetooth
   fi
