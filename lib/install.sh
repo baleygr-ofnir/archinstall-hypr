@@ -164,7 +164,7 @@ create_chroot_script() {
       blueman
     systemctl enable bluetooth
   fi
-
+df -h
   gum confirm "Last part needs user password input atleast 3 times, continue?" && echo "Continuing..."
 
   # Paru install
@@ -186,6 +186,10 @@ create_chroot_script() {
   sudo -u USERNAME_PLACEHOLDER makepkg -si --noconfirm
   cd
   sleep 2
+  
+  gum confirm "Verify mounted devices"
+
+  df -h
 
   # end-4 hyprland dots install
   echo "----Installing end-4 hyprland dots - AUR helper (User password required)----"
