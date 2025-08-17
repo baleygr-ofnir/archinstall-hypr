@@ -2,4 +2,4 @@
 
 
 Start installation in Arch Linux livecd:
-bash <(curl -sL https://hypr.hraethr.tech)
+bash <(curl -sL dub.sh/hyprarch)
